@@ -1,3 +1,31 @@
+# Character counter: basically Ctrl+F
+def char_count():
+	char = input("Character: ")
+	text = input("Text: ")
+	count = 0
+	temp = 0
+	temp2 = len(char)
+	while True:
+	    temp = text.find(char)
+	    if temp >= 0:
+	        count += 1
+	    elif temp == -1:
+	        break
+	    text = text[:temp] + " " + text[temp + temp2:]
+	print(count)
+
+
+# Colored Text!
+def print_color():
+	count = 0
+	while True:
+	    string = "\033[100;{help}m Color Test"
+	    print(string.format(help=count))
+	    count += 1
+	    if count > 100:
+	        break
+	    elif count == 50:
+	        print("^50----------------------------------------------")
 
 
 # Wipes folders based on list. Ex: ['./folder1/suspicious', './folder2/secret']
@@ -71,3 +99,32 @@ def scroll_through(limit):  # limit is the number of files
 		count += 1
 
 
+# Draws a grid on an image
+def draw_grid()
+	from PIL import Image, ImageDraw
+	# import pyautogui
+	# pyautogui.screenshot('Hello.png')
+	im = Image.open('Hello.png')  # Modify
+	print(im.size)
+	im = im.crop((0, 0, 1920, 1080))  # Custom Crop
+	
+	draw = ImageDraw.Draw(im)
+	GX = 50  # int(input('Factor X: '))
+	GY = 100  # int(input('Factor Y: '))
+	t6 = []
+	t5 = 0
+	while GX * t5 <= list(im.size)[1]:
+	    t6 += [GX * t5]
+	    t5 += 1
+	for x in t6:
+	    draw.line((0, x, im.size[0], x), fill=(255, 255, 0))  # yellow, horizontal
+	t6 = []
+	t5 = 0
+	while GY * t5 <= list(im.size)[0]:
+	    t6 += [GY * t5]
+	    t5 += 1
+	for y in t6:
+	    draw.line((y, 0, y, im.size[1]), fill=(0, 255, 255))  # cyan, vertical
+	
+	im.save('Hello2.png')  # Output
+	im.close()
