@@ -8,6 +8,7 @@ GPIO.setwarnings(False)
 # This is connected to the LDR (i'm not sure about others like potentiometer ._.)
 # ~900 bright, ~600 room, ~100 dark
 def read_ADC_init()
+    global spidev
     import spidev  # For the magic ADC converter (MCP3008)
     global my_spi
     my_spi=spidev.SpiDev()
@@ -25,7 +26,8 @@ def read_ADC():
 # Other module is "Adafruit_DDHT". Initialize: sensor = Adafruit_DHT.AM2302
 # humi, temp = Adafruit_DHT.read_retry(sensor, pin)
 def read_temp_humidity_init()
-    from . import dht11
+    global dht11
+    import dht11
     global dht11_inst
     dht11_inst = dht11.DHT11(pin=21)  # read data using pin 21
 
@@ -152,8 +154,57 @@ def beep(on, off, times):
         time.sleep(off)
 
 
+
+
 # Keypad
+# What they call "cbk_func" = callback function
+# init(key_press_cbk) sets column pins as output & value 1, and row pins as input, "pull up". [Keypad Matrix has 4 rows and 3 columns, which I assume that each button is connected to both a column and row pin.]
+# get_key() loops through columns, puts one low temporarily, checks which row pin (input) becomes low, then gets character from the keypad matrix. "debounce" interval of 0.1.
+
+MATRIX=[ [1, 2, 3],
+         [4, 5, 6],
+         [7, 8, 9],
+         ['*', 0, '#']] #layout of keys on keypad
+ROW=[6, 20, 19, 13] #row pins
+COL=[12, 5, 16] #column pins
+
+def read_keypad_init()
+    for i in range(3):  # set column & row pins as outputs, pulled up
+        GPIO.setup(COL[i],GPIO.OUT)
+        GPIO.output(COL[i],1)
+    
+    for j in range(4):
+        GPIO.setup(ROW[j],GPIO.IN,pull_up_down=GPIO.PUD_UP)
+
+
+def read_keypad():
+    key = None
+    for i in range(3):  # loop columns
+        GPIO.output(COL[i], 0)  # pull one column pin low
+        for j in range(4):  # check which row becomes low
+            if GPIO.input(ROW[j])==0:
+                key = MATRIX[j][i]  # [ADD] STORE
+                print(key)  # print if pressed
+                while GPIO.input(ROW[j])==0:  # debounce
+                    sleep(0.1)
+        GPIO.output(COL[i],1) # write back to 1, to check next column
+        if key not None:
+            return key
+
+
+
+
 # LCD
+# https://gist.github.com/DenisFromHR/cc863375a6e19dce359d
+def set_LCD_init()  # not tested lol
+    global I2C_LCD_driver
+    import I2C_LCD_driver  # import the library
+    LCD = I2C_LCD_driver.lcd()  # instantiate an lcd object
+    sleep(0.3)
+    LCD.backlight(0) #turn backlight off
+    sleep(0.3)
+    LCD.backlight(1) #turn backlight on 
+    LCD.lcd_clear() #clear the display
 
 
 def all_init():
@@ -167,13 +218,16 @@ def all_init():
     set_motor_init()
     set_led_init(0)
     set_buzzer_init(0)
+    read_keypad_init()
+    set_LCD_init()
     
 
 all_init()
 
-# Use Examples:
-# using LDR brightness to manipulate buzzer frequency
-# using keyboard to select functions like a menu
+# To run multiple things simultaneously:
+# Thread(target=insert_function()).start()
+# Thread(target=insert_function2()).start()
+# However, it won't run anything after until you join...
 
 
 while True:
@@ -181,7 +235,6 @@ while True:
     # time.sleep(0.2)  # Controlled to limit measurements, or time outputs. Ex: blinking
     
     return 0
-
 
 
 # print(f'Light: {read_ADC()}')
@@ -196,11 +249,18 @@ while True:
 # print('Black/Fire:', read_IR())  # btw im not sure... 0 = blocked
 # print('Right side:', read_switch())
 
-
 # set_servo(90)
 # set_motor(100)
 # set_led(0, 1)
 # set_buzzer(1, 100)
 
+# read_keypad()
+# LCD.lcd_display_string("Second Row! Slightly forward...", line=2, pos=2)
+    
 
-
+# Use Examples:
+# using ultrasonic as a wireless button
+# using moisture sensor to turn on the servo
+# using motor + gears + wheels 
+# using keyboard to select functions like a menu
+# using LDR brightness to manipulate buzzer frequency
