@@ -39,6 +39,16 @@ def read_temp_humidity():
         return None, None
 
 
+# This is connected to a moisture sensor (metallic-looking)
+# Waste of space 💀
+def read_moist_init()
+    GPIO.setup(4,GPIO.IN)  # set GPIO 4 as input
+
+
+def read_moist()
+    return bool(GPIO.input(4))  # 1 = moisture present
+
+
 # This is connected to an Ultrasonic Sensor
 # Requires import time
 def read_distance_init():
@@ -62,8 +72,18 @@ def read_distance():
     return distance
 
 
+# This is for an IR sensor
+# No lines as well 💀
+def read_IR_init():
+    GPIO.setup(17,GPIO.IN)  # set GPIO 17 as input
+
+def read_IR():
+    return bool(GPIO.input(17)) 
+
+
 # This is for a Servo, 0 to 180°
 # (or more, or less, you know how servos are)
+# https://www.learnrobotics.org/blog/raspberry-pi-servo-motor/
 def set_servo_init():
     GPIO.setup(26, GPIO.OUT)  # set GPIO 26 as output
 
@@ -71,7 +91,7 @@ def set_servo_init():
 def set_servo(position):
     servo_PWM = GPIO.PWM(26, 50)  # set 50Hz PWM output at GPIO26
     position = (-10*position)/180 + 12  # formula to rearrange to scale.
-    servo_PWM.start(position)  # (it sets duty cycle to position)
+    servo_PWM.start(position)  # (see the link above)
     sleep(0.05)
 
 
@@ -88,13 +108,37 @@ def set_motor(speed):
         PWM.start(speed)
 
 
+# LED one line 💀
+# 1 or 0. PWM
+def set_led_init(pwm):
+    GPIO.setup(24, GPIO.OUT)  # set GPIO 24 as output
+    if opt:
+        global LED_pwm
+        LED_pwm = GPIO.PWM(24, 50)
+
+
+def set_led(pwm, level):
+    if pwm:
+        LED_pwm.start(level)
+    else:
+        GPIO.output(24, level)
+    
+
+
+# Keypad
+
+
+
 
 def all_init():
     read_ADC_init()
     read_temp_humidity_init()
-    read_distance_init():
+    read_moist_init()
+    read_distance_init()
+    read_IR()
     set_servo_init()
     set_motor_init()
+    set_led_init(0)
 
 
 all_init()
@@ -110,7 +154,16 @@ while True:
 # temp, humi = read_temp_humidity()
 # print(f'T = {temp:4.1f}°C, H = {humi:5.1f}%')
 
+# print('Moisture Present:', read_moist())
+
 # print(f'Dist = {read_distance():0.1f} cm')
+
+# print('Black/Fire:', read_IR())  # btw im not sure
 
 # set_servo(90)
 # set_motor(100)
+# set_led(0, 1)
+
+
+
+
