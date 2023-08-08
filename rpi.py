@@ -16,7 +16,7 @@ def read_ADC_init()
 
 def read_ADC():
     my_spi.max_speed_hz=1350000
-    r=my_spi.xfer2([1,0b10000000,0])    # [0b10000000 = 128 = 8+0<<4]
+    r=my_spi.xfer2([1,0b10000000,0])  # [0b10000000 = 128 = 8+0<<4]
     result=((r[1]&3)<<8)+r[2]
     return result
 
@@ -39,9 +39,46 @@ def read_temp_humidity():
         return None, None
 
 
-# print(read_ADC())
+# This is connected to an Ultrasonic Sensor
+# Requires import time
+def read_distance_init():
+    GPIO.setup(25, GPIO.OUT)  # GPIO25 as Trig
+    GPIO.setup(27, GPIO.IN)  # GPIO27 as Echo
+
+
+def read_distance():
+    GPIO.output(25,1)  # produce a 10us pulse at Trig
+    time.sleep(0.00001)
+    GPIO.output(25,0)
+    
+    start = time.time()  # measure pulse width (i.e. time of flight) at Echo
+    stop = time.time()
+    while GPIO.input(27)==0:
+        start = time.time()  # capture start of high pulse
+    while GPIO.input(27)==1:
+        stop = time.time()  # capture end of high pulse
+
+    distance = (stop - start)*34300/2  # compute distance (cm) = time*speed of ultrasound, /2 from echo
+    return distance
+
+
+def all_init():
+    read_ADC_init()
+    read_temp_humidity_init()
+    read_distance_init():
+
+
+all_init()
+
+
+while True:
+    # Place your code here
+    return 0
+
+
+# print(f'Light: {read_ADC()}')
 
 # temp, humi = read_temp_humidity()
 # print(f'T = {temp:4.1f}°C, H = {humi:5.1f}%')
 
-
+# print(f'Dist = {read_distance():0.1f} cm')
