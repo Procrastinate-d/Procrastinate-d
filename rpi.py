@@ -62,10 +62,39 @@ def read_distance():
     return distance
 
 
+# This is for a Servo, 0 to 180°
+# (or more, or less, you know how servos are)
+def set_servo_init():
+    GPIO.setup(26, GPIO.OUT)  # set GPIO 26 as output
+
+
+def set_servo(position):
+    servo_PWM = GPIO.PWM(26, 50)  # set 50Hz PWM output at GPIO26
+    position = (-10*position)/180 + 12  # formula to rearrange to scale.
+    servo_PWM.start(position)  # (it sets duty cycle to position)
+    sleep(0.05)
+
+
+# This is for a DC Motor
+# which is mostly useless because its glued to the board, lying, blocked by being in the middle
+def set_motor_init():
+    global motor_PWM
+    GPIO.setup(23,GPIO.OUT) #set GPIO 23 as output
+    motor_PWM = GPIO.PWM(23, 100)  # GPIO23 set frequency (up to you...)
+
+
+def set_motor(speed):
+    if 0 <= speed <= 100:
+        PWM.start(speed)
+
+
+
 def all_init():
     read_ADC_init()
     read_temp_humidity_init()
     read_distance_init():
+    set_servo_init()
+    set_motor_init()
 
 
 all_init()
@@ -82,3 +111,6 @@ while True:
 # print(f'T = {temp:4.1f}°C, H = {humi:5.1f}%')
 
 # print(f'Dist = {read_distance():0.1f} cm')
+
+# set_servo(90)
+# set_motor(100)
