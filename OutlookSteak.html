@@ -1,0 +1,381 @@
+<head>
+    <!-- To use on outlook (browser) console. Cooked with a boatload of salt.
+        Enable running javascript in the console. 
+
+        Works on Chrome as of 27 Mar 2025
+        If in firefox, may have to wrap any functions with "async" in a super function, then call await <function>...
+    -->
+    <title>🍴 Outlook Steak 🔥</title>
+</head>
+
+<script>
+    /* https://stackoverflow.com/questions/30466581/preserve-all-backslashes-in-a-string */
+
+const prefixText = 
+    /*---------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+    // so it turns out half of this was useless 
+    String.raw`
+    lastMonth = false; var date = new Date(); if (date.getDate() == 1){ lastMonth = true; }
+    function findMe(base, query, loop=false, checkinnerHTML=null, searchinnerHTML=null, searchgetAttribute=null, ){ var elements = base.querySelectorAll(query); if (loop && elements.length > 0){ var elementsList = []; 
+    if (checkinnerHTML != null){ for (let i = 0; i < elements.length; i++) { e = elements[i]; if (e.innerHTML == checkinnerHTML){ elementsList.push(e); }} } else if (searchinnerHTML != null){ /* [] */  if (searchinnerHTML[1] == 0){ for (let i = 0; i < elements.length; i++) { e = elements[i];  if (e.innerHTML.search(searchinnerHTML[0]) == -1){ elementsList.push(e); }}
+    } else { for (let i = 0; i < elements.length; i++) { e = elements[i]; if (e.innerHTML.search(searchinnerHTML[0]) > -1){ elementsList.push(e); }}} } else if (searchgetAttribute != null){ if (searchgetAttribute[1] == 0){ for (let i = 0; i < elements.length; i++) { e = elements[i]; if (e.getAttribute(searchgetAttribute[0]).search(searchgetAttribute[2]) == -1 ){ elementsList.push(e); }}
+    } else { for (let i = 0; i < elements.length; i++) { e = elements[i]; if (e.getAttribute(searchgetAttribute[0]).search(searchgetAttribute[2]) > -1 ){ elementsList.push(e); }}} } return elementsList; }  return elements;}
+    
+    async function waitToLoad(targetFunction, myTargetVariables={verbose: true}, base, query, loop=false, checkinnerHTML=null, searchinnerHTML=null, searchgetAttribute=null){ if (myTargetVariables.timer == null) { myTargetVariables.timer = 15; }  if (myTargetVariables.timeWait == null) { myTargetVariables.timeWait = 50; }  var timer = 0; var timeout = 0; var elements; while (true){
+    elements = findMe(base, query, loop, checkinnerHTML, searchinnerHTML, searchgetAttribute);   /*wait to load*/ if (myTargetVariables.verbose == false) { console.log(timer, '/', myTargetVariables.timer, elements.length, '/', myTargetVariables.targetLength); } let i = 0; myTargetVariables.elements = elements; /* reserved keyword: elements */ var outcome = targetFunction(myTargetVariables);
+    if (outcome == true) { timer = 0; } else if (outcome == 'break') { console.log('break'); break; }
+    if ((myTargetVariables.timeout != null) && (timeout >= myTargetVariables.timeout)) { console.log('break'); break; }
+    /* reset the timer */ timer += 1; timeout += 1; await new Promise(r => setTimeout(r, myTargetVariables.timeWait)); if (timer >= myTargetVariables.timer){ if (myTargetVariables.verbose == false) {  console.log("loading finished"); } timer = 0;  break; }}  return elements;}
+    function waitPresent(myTargetVariables){  var elements = myTargetVariables.elements;
+    var targetLength = myTargetVariables.targetLength;   /*console.log(elements.length, elements);*/  
+    
+    /* if (myTargetVariables.verbose == false){ console.log(elements.length, '/', targetLength); } */
+    if ((targetLength == 0) && (elements.length > 0)){ return true; }
+    if ((elements.length < targetLength) || (elements == null)) { return true; } return false; }
+    var waitsettings = {timer:5, targetLength: 1, verbose: false};
+    async function awaitMe(num=300) { await new Promise(r => setTimeout(r, num)); }
+    
+    var dateObj = new Date();
+    var today = dateObj.getUTCFullYear() + "-" + (dateObj.getUTCMonth() + 1).toLocaleString('en-US', {minimumIntegerDigits: 2, useGrouping:false}) + "-" + dateObj.getUTCDate().toLocaleString('en-US', {minimumIntegerDigits: 2, useGrouping:false}); dateObj.setDate(dateObj.getDate() - 1); 
+    
+    var targetDate = dateObj.getUTCFullYear() + "-" + (dateObj.getUTCMonth() + 1).toLocaleString('en-US', {minimumIntegerDigits: 2, useGrouping:false}) + "-" + dateObj.getUTCDate().toLocaleString('en-US', {minimumIntegerDigits: 2, useGrouping:false}); /* ex: if date today is "2024-10-01", targetDate string should be  "2024-09-30" */
+    var numToMonth = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    var numToMonthFull = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];  
+    `
+
+var stringDict = {
+// for Outlook > Email > Rules
+"DeleteRules":
+    String.raw`
+    var zero = 0;
+    var HOWMANYTIMES = 50;
+
+    console.log("If the UI changes then the code will have to be updated lololol.\nPlease open the rules page");
+    for (let i = 0; i < HOWMANYTIMES; i++){
+        var e = findMe(document, 'div[role*="tabpanel"] div[draggable="true"]');
+        var btn = findMe(e[zero], 'button[aria-expanded]'); btn[0].click();
+        await new Promise(r => setTimeout(r, 20));
+        var s = findMe(e[zero], 'button[title="Delete rule"]'); s[0].click();
+        await new Promise(r => setTimeout(r, 100));
+        var ok = findMe(document, 'div[data-portal-node="true"] button', true, "OK"); ok[0].click();
+        await new Promise(r => setTimeout(r, 500));
+    }`,
+
+"CreateRules":
+// Please use large/full screen, avoid zoom and closing the left sidebar if it doesn't work.
+
+// I bet that when the website creates elements, it generates a random id
+// which is why it's nearly impossible for me to specify the exact element (i have to rely on text, or worse, extremely specific structure)
+// and if it updates, i have to modify the code greatly 🥲
+// i didn't add an option to specify from which email
+    String.raw`
+    // please expand your window cuz the folders mess with it
+    console.log("<<<<<<< Edit list of rules here >>>>>>>>");
+    var rulesArr = ['Subject 1', 'Subject 2', '27-03-2025', '26-03-2025'];
+
+    var op = null;
+    console.log('Leave processing more rules on? type "op=true". Otherwise, a random value.');
+    while (op == null){ await new Promise(r => setTimeout(r, 50)); }
+    if (op == true){  console.log('leave it on!');}
+
+    var enterMe = new KeyboardEvent('keydown', { bubbles: true, cancelable: true, keyCode: 13 }); 
+    var ke = new PointerEvent('click', { bubbles: true, cancelable: true });
+    async function execInsertText(PASTESTR, myLovelyInput){
+        console.log(myLovelyInput);
+        myLovelyInput.focus(); 
+        /* it's not focusing >:( */
+        await new Promise(r => setTimeout(r, 200)); 
+        for (let i=0; i<PASTESTR.length*2; i++){ document.execCommand('delete', false); myLovelyInput.dispatchEvent(new Event('change', {bubbles: true})); }
+        for (let i=0; i<PASTESTR.length; i++){
+            document.execCommand('insertText', false, PASTESTR.charAt(i));
+            myLovelyInput.dispatchEvent(new Event('change', {bubbles: true})); 
+            await new Promise(r => setTimeout(r, 20)); }}
+    
+    for (let pasteI=0; pasteI < rulesArr.length; pasteI++){
+        var PASTESTR = rulesArr[pasteI];
+
+    await new Promise(r => setTimeout(r, 500));
+    var myRoot = findMe(document, 'div[aria-label="Inbox rules"]')[0];
+    await waitToLoad(waitPresent, {targetLength: 1, timer: 2, timerWait: 100}, myRoot, "button", true, null, ["Add new rule", 1]);
+    var btn = findMe(myRoot, 'button'); btn[0].click();
+    await new Promise(r => setTimeout(r, 50));
+
+    /* click/select and type rule into name */   
+    var myInput = findMe(myRoot, 'input[placeholder="Name your rule"]')[0];
+    await execInsertText(PASTESTR, myInput);
+    await new Promise(r => setTimeout(r, 200));
+
+    /* condition: select "Subject Includes" */
+    var myInput = findMe(myRoot, 'input[placeholder="Select a condition"]')[0];
+    await execInsertText("S", myInput);
+    myInput.dispatchEvent(enterMe);
+    await new Promise(r => setTimeout(r, 200));
+    /* type rule into new textbox */
+    var myInput = findMe(myRoot, 'input[placeholder="Enter words to look for"]')[0];
+    await execInsertText(PASTESTR, myInput);
+    myInput.dispatchEvent(enterMe);
+    await new Promise(r => setTimeout(r, 200));
+
+    /* action: select "Move to" */
+    var myInput = findMe(myRoot, 'input[placeholder="Select an action"]')[0];
+    await execInsertText("M", myInput);
+    myInput.dispatchEvent(enterMe);
+    await new Promise(r => setTimeout(r, 200));
+    /* select a folder: type rule and enter */
+    var myInput = findMe(myRoot, 'span', true, "Select a folder")[0];
+    myInput.click();
+    await execInsertText(PASTESTR, myInput);
+    await new Promise(r => setTimeout(r, 200));
+        
+    var myInput = findMe(document, 'div[title="'+PASTESTR+'"]');
+    if (myInput.length > 0) { 
+        myInput[0].dispatchEvent(ke);
+    } else{ /* create new folder */
+        console.log('new folder');
+        /* myInput = findMe(document, 'div[aria-label*="'+PASTESTR+'"]')[0]; it was catching something else oops */
+        myInput = findMe(document, 'div[aria-label*="'+PASTESTR+'"][title*="new folder"]')[0];
+        myInput.dispatchEvent(ke); 
+    } /* title is "Create new folder and move to it" */
+
+    /* uncheck "stop processing more rules... or maybe not */ 
+    if (op != true){
+    var myInput = findMe(myRoot, 'span[class*="ms-Checkbox-text"]', true, "Stop processing more rules")[0];
+    myInput.click();
+    await new Promise(r => setTimeout(r, 100));
+    }
+    /* run rule now */
+    var myInput = findMe(myRoot, 'span[class*="ms-Checkbox-text"]', true, "Run rule now");
+    /* may not be present because we didn't wait for the other to finish so just run later, or completely ignore this rule. */
+    if (myInput.length > 0) { myInput = myInput[0]; myInput.click(); await new Promise(r => setTimeout(r, 100));}
+
+    console.log('saving...');
+    await waitToLoad(waitPresent, {targetLength: 1, timer:5, verbose:false}, myRoot.parentNode.parentNode.parentNode, "button:not([disabled])", true, "Save");
+    var myInput = findMe(myRoot.parentNode.parentNode.parentNode, "button:not([disabled])", true, "Save")[0];
+    myInput.click();
+    }
+    
+    `,
+
+"GetMyRules": 
+// Paste result in excel. 
+// Use case: When transferring to another email. TEXTJOIN("', '", TRUE, <select cells>)
+
+    String.raw`
+    // var e = document.querySelectorAll('[class="M6JTi"]');
+    var e = document.querySelectorAll('div[aria-label="Inbox rules"] div[data-is-focusable="true"] > div > div[class="M6JTi"]');
+    var copyString = "";
+    for (let i = 0; i < e.length; i++){ copyString += e[i].innerHTML + "\n"; } copy(copyString);
+`,
+
+"RunRules":
+// This is actually terrible
+    String.raw`
+    console.log("(restart the page after creating rules)");
+
+    /* click the menu then select "Run Rule Now" */
+    var e = findMe(document, 'div[role*="tabpanel"] div[draggable="true"]'); /* thank goodness they all show up 🙄 */
+    var HOWMANYTIMES = e.length;
+    /* edit the 0 to whatever you started with if you want */
+    for (let i = 0; i < HOWMANYTIMES; i++){
+        e = findMe(document, 'div[role*="tabpanel"] div[draggable="true"]'); 
+        console.log(i);
+        var btn = findMe(e[i], 'button[aria-haspopup="menu"]'); btn[0].click();
+        await new Promise(r => setTimeout(r, 500));
+        while (true){
+            /* wait until attribute "aria-disabled" has disappeared  :not([aria-disabled]) */
+            await new Promise(r => setTimeout(r, 100));
+            var ok = findMe(document, 'span[class*="fui-MenuItem__content"]', true, "Run rule now")[0];
+            if (ok.parentNode.getAttribute("aria-disabled") == null){ console.log('ok to click'); break; } }
+        
+        await waitPresent, {targetLength: 1, timer: 2, timerWait: 10}, findMe(document, 'span[class*="fui-MenuItem__content"]', true, "Run rule now");
+        var ok = findMe(document, 'span[class*="fui-MenuItem__content"]', true, "Run rule now"); 
+        ok[0].parentNode.click();
+        /* it will lag, very much. and i cannot see if it actually works 😜 */
+    }`,
+}
+
+// TBA if I feel like it
+// drag folders into folder
+// drag inbox emails into folder
+// auto forward emails
+// getting text attachments from emails with the help of microsoft 365 ( i have no general case help )
+
+</script>
+
+<script>
+var asyncCounter = 0;
+async function copyMe(copyText, msg=""){ navigator.clipboard.writeText(copyText);
+    asyncCounter += 1;
+
+    copyInput.value = copyText;
+    copyMsg.getElementsByTagName("div")[0].innerHTML = "Copied!";
+    const asyncCopy = asyncCounter;
+    var opcred = 1;
+    if (msg != ""){ msg = " "+msg; }
+    for (let i = 100; i> 0; i-=opcred){    
+        copyMsg.style["opacity"] = i/100.0;
+        copyMsg.getElementsByTagName("div")[0].innerHTML = "Copied"+msg+"!";
+        if ((i % 10) == 0){ opcred += 1; }
+        await sleep(40);
+        
+        if (asyncCopy != asyncCounter){ break; }
+    }
+    if (asyncCopy == asyncCounter){ asyncCounter = 0;
+        copyMsg.style["opacity"] = 0;
+     }
+}
+
+function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms));}
+function addDays(date, days=1) { var result = new Date(date); result.setDate(result.getDate() + days); return result; }
+
+function setRGB(){
+    var obj = document.body;
+    var R = document.getElementById("sliderR").value;
+    var G = document.getElementById("sliderG").value;
+    var B = document.getElementById("sliderB").value;
+    obj.style["background-color"] = "rgb("+R+", "+G+", "+B+")";
+
+    var obj2 = document.getElementById("display");
+    obj2.innerHTML = R+", "+G+", "+B;
+    }
+function loadMeColor(){
+    var localStorage = window.localStorage;
+    var clrR = localStorage.getItem("colorbgR");
+    if (clrR === undefined){
+        localStorage.setItem('colorbgR', 0);
+        localStorage.setItem('colorbgG', 0);
+        localStorage.setItem('colorbgB', 0); }
+    else {
+        var e = document.getElementsByTagName("input");
+        for (let i = 0; i < e.length; i++){ 
+        var R = localStorage.getItem('colorbgR');
+        var G = localStorage.getItem('colorbgG');
+        var B = localStorage.getItem('colorbgB');
+        console.log(R, G, B);
+        e[i].style.setProperty('--SliderColor', "rgb("+R+", "+G+", "+B+")");
+
+        document.getElementById("sliderR").value = R;
+        document.getElementById("sliderG").value = G;
+        document.getElementById("sliderB").value = B;
+        }   
+        setRGB(); setAllColor(R, G, B);
+    }
+
+    // Save slider background
+    // am I doing something wrong
+    var e = document.getElementsByTagName("input");
+    for (let i = 0; i < e.length; i++){
+    e[i].addEventListener("input", (evt) => {
+        
+    var e = document.getElementsByTagName("input");
+    for (let i = 0; i < e.length; i++){ 
+        /*e[i].style["background-color"] = "rgb("+R+", "+G+", "+B+")";*/
+        var R = document.getElementById("sliderR").value;
+        var G = document.getElementById("sliderG").value;
+        var B = document.getElementById("sliderB").value;
+
+        e[i].style.setProperty('--SliderColor', "rgb("+R+", "+G+", "+B+")");
+        localStorage.setItem('colorbgR', R);
+        localStorage.setItem('colorbgG', G);
+        localStorage.setItem('colorbgB', B); }
+        var obj = document.getElementById("toggleRB");
+    });}
+}
+var yes = 50;
+var darkeryes = 100;
+var Bright_max = 255;
+function offby(val, off){
+    // if ((val-off) < 0){ return 255+(val-off); }
+    if (Bright_max < 255/2.0){ return Number(val)+(off); }
+    return val-off;
+}
+function setAllColor(R, G, B){
+    var e = document.getElementsByTagName("td");
+    for (let i = 0; i < e.length; i++){  e[i].style.borderColor = "rgb("+offby(R,yes)+", "+offby(G,yes)+", "+offby(B,yes)+")";
+    // var l = e[i].querySelectorAll("*");
+    // for (let i2 = 0; i2 < l.length; i2++){ 
+    //     l[i2].style.color = "rgb("+offby(R,yes)+", "+offby(G,yes)+", "+offby(B,yes)+")";
+    //  }
+    }
+    var sliders = document.querySelectorAll('[class*="slider"]');
+    for (let i = 0; i < sliders.length; i++){ sliders[i].style.backgroundColor = "rgb("+offby(R,darkeryes)+", "+offby(G,darkeryes)+", "+offby(B,darkeryes)+")"; }
+    var e = document.querySelectorAll("*");
+    for (let i = 0; i < e.length; i++){ e[i].style.color = "rgb("+offby(R,darkeryes)+", "+offby(G,darkeryes)+", "+offby(B,darkeryes)+")"; }
+}
+
+function loadMe(){
+
+    loadMeColor();
+
+    var e = document.getElementsByClassName("date");
+    var dateObj = new Date();
+    dateObj = addDays(dateObj, -3);  /* subtract days for yesterday here */
+    e[0].value = dateObj.getUTCDate();
+    e[1].value = dateObj.getUTCMonth() + 1;
+    e[2].value = dateObj.getUTCFullYear();
+}
+
+function getDateThings(){
+    var e = document.getElementsByClassName("date");
+    return String.raw
+    `var timePick = { d:` + e[0].value.toString() + `, m:` + e[1].value.toString() + `, y:`+ e[2].value.toString() + ` };`;
+}
+
+
+</script>
+<style>
+    button { cursor: pointer }
+    td {  border: solid #888888 2px; }
+    tr.ahead { font-weight: bold; font-size: 120%;  text-align: center;}
+    table { height: 10%; width:100%;}
+    td > button, td > a > button { font-size: auto;  font-weight: bold;
+         background-color: #ffffff55; 
+         border: none;
+         width: 100%; height: 100%;
+         font-size: 100%; }
+
+    input.date {
+            width: 80px; text-align: center;
+            font-size: 20px;
+            background-color: #ffffff55;
+        }
+
+    input.slider { width: 30%; accent-color: white; }
+    .slider {
+        --SliderColor: rgb(1, 1, 1); -webkit-appearance: none;
+    height: 8px; border-radius: 1px; margin-bottom: 30px;
+    background-color: rgb(0, 0, 0); }
+
+    .slider::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 20px; height: 20px;
+    border-radius:50%; background-color: var(--SliderColor);
+    border: solid black; overflow: visible; cursor: pointer; }
+
+</style>
+<body onload="loadMe();">
+    D/M/Y <input class="date" value="1"/> - <input class="date" value="1"/> - <input class="date" value="2021"/>
+
+    <table>
+    <tr>
+        <td><button onclick="copyMe(prefixText + stringDict['DeleteRules'], 'delete rules')">Delete Rules</button></td>
+        <td><button onclick="copyMe(prefixText + stringDict['CreateRules'], 'create rules')">Create Rules</button></td>
+        <td><button onclick="copyMe(prefixText + stringDict['RunRules'], 'run rules')">Run Rules</button></td>
+        <td><button onclick="copyMe(prefixText + stringDict['GetMyRules'], 'get rules')">Get Rules</button></td>
+    </tr>
+    </table>
+    
+    <div id="display" style="font-size: 15px; font-weight: bold;">...</div>
+    <div class="slidecontainer">
+        <input type="range" min="0" max="255" value="255" class="slider" id="sliderR" oninput="setRGB()">
+        <input type="range" min="0" max="255" value="255" class="slider" id="sliderG" oninput="setRGB()">
+        <input type="range" min="0" max="255" value="255" class="slider" id="sliderB" oninput="setRGB()">
+  </div>
+
+    <textarea id="copyInput" style="background: #ffffff88; width: 100%; height:50% "> </textarea>
+    <div id="copyMsg" style="position: fixed; width: 200px; height: 50px; top: 50%; bottom: 50%; background:#ffffffdd;
+        left: 50%; right: 50%; transform: translate(-50%, -50%); display: flex; justify-content: center; align-items: center; opacity: 0; pointer-events: none;"> 
+        <div style="font-size: 100%; text-align: center;"> Copied! </div>
+    </div>
+</body>
+
+
