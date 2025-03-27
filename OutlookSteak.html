@@ -192,11 +192,55 @@ var stringDict = {
         ok[0].parentNode.click();
         /* it will lag, very much. and i cannot see if it actually works 😜 */
     }`,
+
+"MoveIntoFolder": 
+// Set up folders to include here
+// please open any subfolders with the folders you want
+// also avoid same names 😌🙏 otherwise i'd have to count the number of parents
+    String.raw`
+    var DestinFolderName = "Main";
+    var DestinFolder;
+    var IncludeFolders = [];
+    var folders = document.querySelectorAll('div[aria-labelledby*="primaryMailboxRoot"] div[draggable="true"] > div[title] > span[class]:not([class="screenReaderOnly"])');
+    /* // Use this and =CONCAT("var IncludeFolders = ['", TEXTJOIN("', '", TRUE, <SELECT CELLS>), "'];")
+    var copyString = ""; for (let i = 0; i < folders.length; i++){ copyString += folders[i].innerHTML + "\n"; } copy(copyString);
+    */
+    
+    // may include duds like the number of unread emails
+    // var copyString = "";
+    var selFolders = [];
+    var text = "";
+    for (let i = 0; i < folders.length; i++){ 
+        text = folders[i].innerHTML;
+        if (text == DestinFolderName){ DestinFolder = folders[i]; }
+        if ((text != DestinFolderName) && (IncludeFolders.includes(text))){
+            // copyString += folders[i].innerHTML + "\n";
+            selFolders.push(folders[i]); }
+    } 
+    // copy(copyString);
+
+    // https://www.reddit.com/r/learnjavascript/comments/15ab6gb/how_to_trigger_right_click_event/
+    var RCK = new MouseEvent('contextmenu', { bubbles: true, cancelable: true, view: window, });
+    var mEvt = ['mousedown', 'click', 'mouseup', 'mousemove'];
+    function simulateMouseClick(element){ element.dispatchEvent( new MouseEvent(mEvt[0], { view: window, bubbles: true, cancelable: true, buttons: 1 }));
+        element.dispatchEvent( new MouseEvent(mEvt[1], { view: window, bubbles: true, cancelable: true, buttons: 1 }));
+        element.dispatchEvent( new MouseEvent(mEvt[2], { view: window, bubbles: true, cancelable: true, buttons: 1 })); };
+
+    for (let i = 0; i < selFolders.length; i++){
+        (selFolders[i]).scrollIntoView();
+        selFolders[i].dispatchEvent(RCK);
+        var e = await waitToLoad(waitPresent, {targetLength: 1, timer: 5, timerWait: 10}, document, 'span[class*="fui-MenuItem__content"]', true, null, ["Move", 1])
+        simulateMouseClick(e[0]); // right click
+        var e = await waitToLoad(waitPresent, {targetLength: 1, timer: 5, timerWait: 10}, document, 'div[class*="fui-DialogBody"] div[role="menuitem"] > span > span', true, DestinFolderName);
+        simulateMouseClick(e[0]); // click target folder
+        var e = await waitToLoad(waitPresent, {targetLength: 1, timer: 5, timerWait: 10}, document, "div.fui-DialogActions > button.fui-Button", true, null, ["Move", 1]);
+        simulateMouseClick(e[0]); // click Move
+    }
+    `, // dragging did not work out. I got stuck at e.DataTransfer.clearData()
 }
 
 // TBA if I feel like it
-// drag folders into folder
-// drag inbox emails into folder
+// move inbox emails into folder
 // auto forward emails
 // getting text attachments from emails with the help of microsoft 365 ( i have no general case help )
 
@@ -278,7 +322,7 @@ function loadMeColor(){
         localStorage.setItem('colorbgR', R);
         localStorage.setItem('colorbgG', G);
         localStorage.setItem('colorbgB', B); }
-        var obj = document.getElementById("toggleRB");
+        setAllColor(R, G, B);
     });}
 }
 var yes = 50;
@@ -290,6 +334,7 @@ function offby(val, off){
     return val-off;
 }
 function setAllColor(R, G, B){
+    console.log('hey', R, G, B);
     var e = document.getElementsByTagName("td");
     for (let i = 0; i < e.length; i++){  e[i].style.borderColor = "rgb("+offby(R,yes)+", "+offby(G,yes)+", "+offby(B,yes)+")";
     // var l = e[i].querySelectorAll("*");
@@ -327,7 +372,7 @@ function getDateThings(){
     button { cursor: pointer }
     td {  border: solid #888888 2px; }
     tr.ahead { font-weight: bold; font-size: 120%;  text-align: center;}
-    table { height: 10%; width:100%;}
+    table { height: 20%; width:100%;}
     td > button, td > a > button { font-size: auto;  font-weight: bold;
          background-color: #ffffff55; 
          border: none;
@@ -361,6 +406,12 @@ function getDateThings(){
         <td><button onclick="copyMe(prefixText + stringDict['CreateRules'], 'create rules')">Create Rules</button></td>
         <td><button onclick="copyMe(prefixText + stringDict['RunRules'], 'run rules')">Run Rules</button></td>
         <td><button onclick="copyMe(prefixText + stringDict['GetMyRules'], 'get rules')">Get Rules</button></td>
+    
+        
+    </tr>
+    <tr>
+        <td><button onclick="copyMe(prefixText + stringDict['MoveIntoFolder'], 'move folder')">Move Folders</button></td>
+
     </tr>
     </table>
     
@@ -377,5 +428,3 @@ function getDateThings(){
         <div style="font-size: 100%; text-align: center;"> Copied! </div>
     </div>
 </body>
-
-
