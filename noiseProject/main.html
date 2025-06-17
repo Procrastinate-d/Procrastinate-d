@@ -1,4 +1,4 @@
-<head> <title>Template</title> <style> body {background-color: black;} * {color: grey; } canvas { position:absolute; top:0; left:0px; z-index:-1; } div > div { display: inline-block; } </style> </head>
+<head> <title>Noise Playground</title> <style> canvas { position:absolute; top:0; left:0px; z-index:-1; } </style> </head>
 <script>
 /* IMPORTS */
 const ScriptSources = [ "https://cdn.jsdelivr.net/npm/p5@1.11.8/lib/p5.min.js", "./allMyImports.js"];
@@ -25,15 +25,17 @@ function draw() {
     loadPixels(); /* need to load otherwise "pixels" array be empty */
     document.querySelector("#currentTime").innerHTML = Math.round(gn.xt, 5)+"\t"+Math.round(gn.yt, 5);
     gn.generateImage(gn.xt, gn.yt, smooth=false)
+    gn.showGradientBoxes(); gn.averageGradientBoxes();
+    gn.activateContours(); gn.showGradientBoxDetails();
     updatePixels(); 
     gn.showGradients(gn.xt, gn.yt);
     gn.rotateGradients();
     gn.triggerCircles();
     gn.changeOffset();
 }
-
 </script>
 <style>
+    body {background-color: black;} * {color: grey; } div > div { display: inline-block; } 
     .slider { --SliderColor: rgb(191, 191, 191); -webkit-appearance: none;
     height: 8px; border-radius: 1px; margin-bottom: 6px; background-color: rgb(91, 91, 91); }
     .slider::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 6px;
@@ -46,11 +48,18 @@ function draw() {
     Time: <div id="currentTime"></div><br/>
     <input type="range" min="-2500" max="2500" value="0" class="slider" id="xSlider" oninput="gnUI.move(this, window.moveXSliderText)">X Offset: <div id="moveXSliderText">0</div><br/>
     <input type="range" min="-2500" max="2500" value="0" class="slider" id="ySlider" oninput="gnUI.move(this, window.moveYSliderText, true)">Y Offset: <div id="moveYSliderText">0</div><br/>
-    <input type="range" min="0" max="1000" value="273" class="slider" id="rotSlider" oninput="gnUI.rot(this, window.rotSliderText)">Rot: <div id="rotSliderText">0.005</div><br/>
-    <input type="range" min="0" max="1000" value="273" class="slider" id="freqSlider" oninput="gnUI.freq(this, window.freqSliderText)">Freq: <div id="freqSliderText">0.05</div><br/>
-    Smooth: <button onclick="gnUI.triggerSmooth(this)">On</button>
-    Gradients: <button onclick="gnUI.triggerGradients(this)">On</button>
-    Hooked: <button onclick="gnUI.triggerHook(this)">Off</button>
+    <input type="range" min="0" max="1000" value="273" class="slider" oninput="gnUI.rot(this, window.rotSliderText)">Rot: <div id="rotSliderText">0.005</div><br/>
+    <input type="range" min="0" max="1000" value="273" class="slider" oninput="gnUI.freq(this, window.freqSliderText)">Freq: <div id="freqSliderText">0.05</div><br/>
+    Smooth: <button onclick="gnUI.triggerSetting(this, 'smooth')">On</button>
+    Gradients: <button onclick="gnUI.triggerSetting(this, 'showGradient')">On</button>
+    Hooked: <button onclick="gnUI.triggerSetting(this, 'triggerCirclesOnce')">Off</button>
+    Boxes: <button onclick="gnUI.triggerSetting(this, 'showBoxes')">Off</button>
+    Box+: <button onclick="gnUI.triggerSetting(this, 'boxDetails')">Off</button>
+    Box blend: <button onclick="gnUI.triggerSetting(this, 'boxBlend')">Off</button>
     <button onclick="gnUI.resetVar()">Reset</button>
-    </div>
+
+    <input type="range" min="0" max="360" value="0" class="slider" oninput="gnUI.setVal(this, window.dirSliderText, 'N_Directions')">Directions: <div id="dirSliderText">0</div><br/>
+    <input type="range" min="0" max="50" value="0" class="slider" oninput="gnUI.setVal(this, window.contourSliderText, 'contours')">Contours: <div id="contourSliderText">0</div><br/>
+        
+</div>
 </body>
