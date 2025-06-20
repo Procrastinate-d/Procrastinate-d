@@ -1,7 +1,8 @@
 <head> <title>Noise Playground</title> <style> canvas { position:absolute; top:0; left:0px; z-index:-1; } </style> </head>
 <script>
 /* IMPORTS */
-const ScriptSources = [ "https://cdn.jsdelivr.net/npm/p5@1.11.8/lib/p5.min.js", "./allMyImports.js"];
+ver = "1.11.8"// 1.11.8, 2.0.0, latest
+const ScriptSources = [ "https://cdn.jsdelivr.net/npm/p5@"+ver+"/lib/p5.min.js", "./allMyImports.js"];
 for (let i=0; i<ScriptSources.length; i++){
     var script = document.createElement('script'); 
     script.type = 'text/javascript'; script.src = ScriptSources[i]; 
@@ -17,49 +18,71 @@ function setup() { /* INITIALIZE VARIABLES */
     pixelDensity(1);
     gn = new GraphNoise(canvasSize);
     gnUI = new GraphNoiseUI(gn);
-    // frameRate(0.5); // testing
+    p5.disableFriendlyErrors = true;
+    // frameRate(20); // testing
 }
 function mousePressed() { gn.handlePress(); }
 function draw() {
     background(0);
     loadPixels(); /* need to load otherwise "pixels" array be empty */
     document.querySelector("#currentTime").innerHTML = Math.round(gn.xt, 5)+"\t"+Math.round(gn.yt, 5);
-    gn.generateImage(gn.xt, gn.yt, smooth=false)
+    gn.generateImage(gn.xt, gn.yt)
     gn.showGradientBoxes(); gn.averageGradientBoxes();
     gn.activateContours(); gn.showGradientBoxDetails();
+    gn.addEffect();
     updatePixels(); 
     gn.showGradients(gn.xt, gn.yt);
     gn.rotateGradients();
-    gn.triggerCircles();
+    gn.triggerCircles(document.querySelector("#logCircle"));
     gn.changeOffset();
 }
 </script>
 <style>
-    body {background-color: black;} * {color: grey; } div > div { display: inline-block; } 
+    body {background-color: black;} * {color: grey; } * > div, input { display: inline-block; min-width: 0px; margin: 0px } 
+    /* * { border: 1px solid red; }  */
     .slider { --SliderColor: rgb(191, 191, 191); -webkit-appearance: none;
     height: 8px; border-radius: 1px; margin-bottom: 6px; background-color: rgb(91, 91, 91); }
     .slider::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 6px;
-    border-radius:50%; background-color: var(--SliderColor); border: solid black; overflow: visible; cursor: pointer; }
+    border-radius:50%; background-color: var(--SliderColor); border: solid black; overflow: visible; cursor: pointer;}
 </style>
-<body>
+<body style="margin:0px;">
+    <div style="position:relative;">
     <div id="canvasContainer"></div>
-    <div id="settingsBorder" style="border: 2px solid white; left:0px; position: absolute;">
-    Coords: <div id="log"></div><br/>
+    <div style="border: 2px solid white; left: 320px; position:absolute; width: 500px; height: 100%"> 
+        <form autocomplete="off" onsubmit="return false;">
+        <input type="range" min="0" max="180" value="0" class="slider" oninput="gnUI.setVal(this, 'N_Directions', window.dirSliderText)"/> Directions: <div id="dirSliderText">0</div><br/>
+        <input type="range" min="0" max="50" value="0" class="slider" oninput="gnUI.setVal(this, 'contours', window.contourSliderText)"/> Contours: <div id="contourSliderText">0</div><br/>
+
+        <!-- FBM -->
+        <input type="range" min="1" max="15" value="1" class="slider" oninput="gnUI.setVal(this, 'layer', window.layersSliderText)"/> Layers: <div id="layersSliderText">1</div><br/>
+        <input type="range" min="1" max="15" value="2" step="0.01" class="slider" oninput="gnUI.setVal(this, 'lacunarity', window.lacuSliderText)"/> Lacunarity: <div id="lacuSliderText">2</div><br/>
+        <input type="range" min="0" max="2" step="0.0001" value="0" class="slider" oninput="gnUI.setVal(this, 'gain', window.gainSliderText)"/> Gain: <div id="gainSliderText">1 / lacunarity</div><br/>
+        
+        <input type="radio" name="wrapper2" value="none" onclick="gnUI.setWrapper(this, 'effect');" checked/>None
+        <input type="radio" name="wrapper2" value="oil" onclick="gnUI.setWrapper(this, 'effect');" />Oil
+        <!-- <input type="radio" name="wrapper2" value="TBA"/> -->
+
+        </form>
+    </div></div>
+    <form autocomplete="off" onsubmit="return false;"> <!-- <div id="log"></div><br/> -->
+    <div id="settingsBorder" style="border: 2px solid white; position:relative">
+    Coords: <div id="logCircle"></div><br/>
     Time: <div id="currentTime"></div><br/>
     <input type="range" min="-2500" max="2500" value="0" class="slider" id="xSlider" oninput="gnUI.move(this, window.moveXSliderText)">X Offset: <div id="moveXSliderText">0</div><br/>
     <input type="range" min="-2500" max="2500" value="0" class="slider" id="ySlider" oninput="gnUI.move(this, window.moveYSliderText, true)">Y Offset: <div id="moveYSliderText">0</div><br/>
-    <input type="range" min="0" max="1000" value="273" class="slider" oninput="gnUI.rot(this, window.rotSliderText)">Rot: <div id="rotSliderText">0.005</div><br/>
-    <input type="range" min="0" max="1000" value="273" class="slider" oninput="gnUI.freq(this, window.freqSliderText)">Freq: <div id="freqSliderText">0.05</div><br/>
+    <input type="range" min="0" max="1000" value="273" class="slider" oninput="gnUI.setSlider(this, 'rotFactor', window.rotSliderText)">Rot: <div id="rotSliderText">0.005</div><br/>
+    <input type="range" min="0" max="1000" value="273" class="slider" oninput="gnUI.setSlider(this, 'f', window.freqSliderText)">Freq: <div id="freqSliderText">0.05</div><br/>
+    <button onclick="gnUI.resetVar()">Reset</button><br> 
     Smooth: <button onclick="gnUI.triggerSetting(this, 'smooth')">On</button>
     Gradients: <button onclick="gnUI.triggerSetting(this, 'showGradient')">On</button>
     Hooked: <button onclick="gnUI.triggerSetting(this, 'triggerCirclesOnce')">Off</button>
+    Select: <select onchange="gnUI.switchMode(this)">
+        <option value="perlin">Perlin</option><option value="value">Value</option>
+    </select><br/>
+       
     Boxes: <button onclick="gnUI.triggerSetting(this, 'showBoxes')">Off</button>
-    Box+: <button onclick="gnUI.triggerSetting(this, 'boxDetails')">Off</button>
+    Grad Debug: <button onclick="gnUI.triggerSetting(this, 'boxDetails')">Off</button>
     Box blend: <button onclick="gnUI.triggerSetting(this, 'boxBlend')">Off</button>
-    <button onclick="gnUI.resetVar()">Reset</button>
-
-    <input type="range" min="0" max="360" value="0" class="slider" oninput="gnUI.setVal(this, window.dirSliderText, 'N_Directions')">Directions: <div id="dirSliderText">0</div><br/>
-    <input type="range" min="0" max="50" value="0" class="slider" oninput="gnUI.setVal(this, window.contourSliderText, 'contours')">Contours: <div id="contourSliderText">0</div><br/>
-        
+</form>
 </div>
 </body>
