@@ -51,4 +51,62 @@ function draw() {
     </div><br>
     <!-- second row -->
     <div id="NoiseUIManager_box2" style="border: 1px solid white; position:relative; width:820px;"></div>
+
+    <textarea id="InputTextArea" style="background: #000000AA; width: 100%; height:50% ">
+User manual:
+    [1] Base Noise Features
+        [Offset] X & Y rate to shift graph.
+        [Freq] Frequency Zoom
+        [Amp] Increases brighteness or contrast.
+        [Reset] the above.
+        [Rot] Rotation - Affects rate of change of intialized random values.
+        [Directions] Number of possible gradients/orientations.
+        [Smooth] Smoothing/Easing function. (Note: not intended for Voronoi noise.)
+        [Noise function select] Covers Perlin, Value, Voronoi and variations. 
+        [F2 Variation] Since F2 has a lot, these are in the same function. Split them if you must.
+        [Tiling] Repeat (Not built to increase after initialization.)
+
+    [2] Helper Features
+        [Coords] Click on canvas to change gradients/directions. Affected by [Directions]
+        [Hooked] Stick to one gradient to change.
+        [Loop] Temporarily stop the program.
+
+        [Color] Color Gradients. You may edit them in the code.
+        [Inverse] Invert color gradients.
+        [Download] Image.
+
+        [Display - Box] Show gradients within cells for Perlin Noise.
+        [Display - Box Blend] Tried averaging the gradients but I didn't get the result I wanted.
+        [Display - Closest] First step of Voronoi Noise.
+        [Extra - Gradient] Shows gradients for Perlin Noise.
+        [Extra - Debug] Shows calculations for [Display - Box Blend].
+
+    [3] FBM Features
+        [Display - FBM] Switch to FBM mode 
+        [Layers] Recommended < 5 and f < 0.03. (warning: slow, especially w/ Voronoi)
+        [Lacunarity] I think it's how "fractal" it is. Avoid < 1.
+        [Gain] Persistence of rice.
+
+    [4] Post Processing Features
+        [Turbulence] Recommended for Perlin + FBM
+        [Marble] Recommended > 50, close zoom for Perlin + FBM
+        [Wood] It's like contours and turbulence had a baby.
+
+        [Countours] (fake) Please increase "allowance" for thicker lines.
+        [Oil] Well what does it look like to you?
+        [Grid] If hard to see, please replace "gridding(){}" in code with a static value.
+        [Distance] Distance Measures for Voronoi (but really lazily made)
+
+    [5] Possible Improvements
+        Use arrow keys for finer control of sliders.
+        Seed slider (no. >:) )
+        Sources to Smooth Voronoi, Display modes like marble & wood in allMyImport.js
+
+        Direct support to change coords in Voronoi & Simplex
+        Domain Warping
+        Display Simplex Grid
+        Cracked Glass, Fur
+        RGB channels 
+        Go in the -ve direction
+</textarea>
 </body>
