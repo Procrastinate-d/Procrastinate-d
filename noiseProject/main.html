@@ -1,4 +1,5 @@
-<head> <title>Noise Playground</title> <style> canvas { position:absolute; top:0; left:0px; z-index:-1; } </style> </head>
+<head> <title>Noise Playground</title> <style> canvas { position:absolute; top:0; left:0px; z-index:-1; }
+</style> </head>
 <script>
 /* IMPORTS */
 ver = "1.11.8"// 1.11.8, 2.0.0, latest
@@ -17,69 +18,91 @@ function setup() { /* INITIALIZE VARIABLES */
     pixelDensity(1);
     
     gn = new NoiseProgramManager(canvasSize);
-    gnUI = new NoiseUIManager(document.querySelector("#NoiseUIManager_box1"), document.querySelector("#NoiseUIManager_box2"), gn);
+    gnUI = new NoiseUIManager([document.querySelector("#NoiseUIManager_box1"), document.querySelector("#NoiseUIManager_box2"), document.querySelector("#NoiseUIManager_box3")],
+        gn);
     
     // p5.disableFriendlyErrors = true;
     // frameRate(20); // testing
+    loadPixels();
 }
 function mousePressed() { gn.handlePress(); }
 function draw() {
-    loadPixels();
     gn.generateImage();
-    gn.activateContours(); gn.ExtraStuff();
-    gn.loadImage(); updatePixels();
+    gn.activateContours(); gn.testForMinMax();
+    gn.fixResolution();  gn.loadImage();     
+    updatePixels();
     gn.showOnTop();
-    gn.triggerCircles(document.querySelector("."+ gnUI.ePrefix+"display_Circle"));
-    
+    gnUI.triggerCircles();
     gn.rotateGradients(); gn.changeOffset();
-    // console.log("hey", valueToGradient(0.5, [[0, 0.9, 0.9], [50, 0.9, 0.9], [90, 0.9, 0.9]], [0, 0.75, 1]));
+    gnUI.displayFrameRate();
 }
 </script>
-<style>
+
+<style id="style">
+    div { height: auto; }
     body {background-color: black;} * {color: grey; } * > div, input { display: inline-block; min-width: 0px; margin: 0px } 
     /* * { border: 1px solid red; }  */
     .slider { --SliderColor: rgb(191, 191, 191); -webkit-appearance: none;
     height: 8px; border-radius: 1px; margin-bottom: 6px; background-color: rgb(91, 91, 91); }
     .slider::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 6px;
-    border-radius:50%; background-color: var(--SliderColor); border: solid black; overflow: visible; cursor: pointer;}
+    border-radius:50%; background-color: var(--SliderColor); border: solid black; overflow: visible; cursor: pointer;
+    }
+    .divContainer {font-size: 0px; }
+    .divContainer * {font-size: 12.5px; }
+    .divContainer > * { vertical-align: top;}
+     input[type="radio"] { filter: hue-rotate(30deg); }     
 </style>
-<body style="margin:0px;">
+
+<script> var dateObj = new Date(); if ((dateObj).toString().search("Apr 01") > 0) {
+document.querySelector("#style").innerHTML = document.querySelector("#style").innerHTML + " * {font-family: Comic Sans MS !important; font-size: 12px;}";}
+</script>
+
+
+<body style="margin:0px; width: 820px; ">
     <!-- first row -->
-    <div style="position:relative;border: 1px solid white;"> 
-    <div id="canvasContainer"></div>
-    <div style="border: 1px solid white; left: 320px; position:absolute; width: 500px; height: 239px" id="NoiseUIManager_box1"></div>
+    <div style="position:relative;outline: 1px solid white; height: 241px"> 
+    <div id="canvasContainer" style="height:100%"></div>
+    <div style="outline: 1px solid white; left: 320px; position:absolute; width: 500px; height:100%" id="NoiseUIManager_box1"></div>
     </div><br>
     <!-- second row -->
-    <div id="NoiseUIManager_box2" style="border: 1px solid white; position:relative; width:820px;"></div>
-
-    <textarea id="InputTextArea" style="background: #000000AA; width: 100%; height:50% ">
+    <div style="position:relative; border: 1px solid white; width: 100%;" class="divContainer">
+    <div id="NoiseUIManager_box2" style="outline: 1px solid white; position:relative; width:60%;">not supposed to be empty</div>
+    <div id="NoiseUIManager_box3" style=" position:relative; width:40%;">watchya doin?</div>
+    </div>
+<br><textarea id="InputTextArea" spellcheck="false" style="background: #000000AA; width: 820px; height:50% ">
 User manual:
     [1] Base Noise Features
-        [Offset] X & Y rate to shift graph.
+        [Offset] X & Y rate to shift graph. [Stop at 0] to enable -ve direction.
         [Freq] Frequency Zoom
-        [Amp] Increases brighteness or contrast.
+        [Amp] Increases brighteness or contrast. (If auto norm then it's applied after as well.)
         [Reset] the above.
-        [Rot] Rotation - Affects rate of change of intialized random values.
+        [Rot] Rotation - Affects rate of change of intialized random values. (If 450 then it sets to uniform.)
         [Directions] Number of possible gradients/orientations.
-        [Smooth] Smoothing/Easing function. (Note: not intended for Voronoi noise.)
+        [Smooth] Smoothing/Easing function. (Note: not intended for Voronoi or Simplex noise, please disable.)
         [Noise function select] Covers Perlin, Value, Voronoi and variations. 
         [F2 Variation] Since F2 has a lot, these are in the same function. Split them if you must.
-        [Tiling] Repeat (Not built to increase after initialization.)
+        [Tiling] Change repeat factor. (Not built to increase after initialization.)
 
     [2] Helper Features
         [Coords] Click on canvas to change gradients/directions. Affected by [Directions]
         [Hooked] Stick to one gradient to change.
-        [Loop] Temporarily stop the program.
+        [Value Picker] Displays value. 
 
+        [Auto Norm] Normalize within min & min, displayed at Min/Max, affected by grid. Flicker if unstable.
         [Color] Color Gradients. You may edit them in the code.
         [Inverse] Invert color gradients.
-        [Download] Image.
+        [Download] Image.        
 
         [Display - Box] Show gradients within cells for Perlin Noise.
         [Display - Box Blend] Tried averaging the gradients but I didn't get the result I wanted.
         [Display - Closest] First step of Voronoi Noise.
-        [Extra - Gradient] Shows gradients for Perlin Noise.
+        [Display - Simplex] Show gradients within square for Simplex Noise.
+        [Extra - Gradient] Shows gradients for Perlin, Simplex and Voronoi noises.
         [Extra - Debug] Shows calculations for [Display - Box Blend].
+
+        [Resolution] So fewer pixels need to be calculated.
+        [Trigger] Update without looping.
+        [Loop] Temporarily stop the program.
 
     [3] FBM Features
         [Display - FBM] Switch to FBM mode 
@@ -87,26 +110,35 @@ User manual:
         [Lacunarity] I think it's how "fractal" it is. Avoid < 1.
         [Gain] Persistence of rice.
 
-    [4] Post Processing Features
+        [Domain Warping] (DMW) please reduce resolution if too slow, use auto norm & lower frequencies.
+        [Lighting] recommended x.5 resolution, layers > 2
+        [Norm] Toggle default normalization (perlin & simplex). Affects DMW. 
+
+    [4] Processing Features
         [Turbulence] Recommended for Perlin + FBM
         [Marble] Recommended > 50, close zoom for Perlin + FBM
         [Wood] It's like contours and turbulence had a baby.
+        [Central] How close to center filter.
 
         [Countours] (fake) Please increase "allowance" for thicker lines.
         [Oil] Well what does it look like to you?
         [Grid] If hard to see, please replace "gridding(){}" in code with a static value.
         [Distance] Distance Measures for Voronoi (but really lazily made)
 
-    [5] Possible Improvements
-        Use arrow keys for finer control of sliders.
-        Seed slider (no. >:) )
-        Sources to Smooth Voronoi, Display modes like marble & wood in allMyImport.js
+    [5] Possible Improvements not in the near future
+        RGB channels
+        Perlin Noise Fields
+        Faster voronoi w/ Fortune's Algorithm / Delaunay Triangulation
+        GIF
+        3D 😱 time parameter (Z-scrolling voronoi)
 
-        Direct support to change coords in Voronoi & Simplex
-        Domain Warping
-        Display Simplex Grid
-        Cracked Glass, Fur
-        RGB channels 
-        Go in the -ve direction
+    Use arrow keys for finer control of sliders.
+    Relevant resources in allMyImport.js
+    Seed slider (no. >:) )    
+    This is a generic noise program for learning and is not built for speed.
+    
+    Strange bugs may appear:
+        The clicking function may cause a "cell" to become black if the difference is 0 (NaN error)
+        Settings fail to apply. When reloading to get the page, it looks different :/
 </textarea>
 </body>
