@@ -36,43 +36,6 @@ function hsv_to_rgb(color){
     return [(r+m)*255, (g+m)*255, (b+m)*255 ]
 }
 
-// function pxl(x, y){ return (x+(width)*(y)); }
-// function roundPrint(myList){
-//     var printStr = "";
-//     for (let i=0;i<myList.length;i++){ printStr += round(myList[i])+" "; }
-//     return printStr;
-// }
-// ======================================================================
-// function lerp1D(x0, x1, t){ return x0*(1.-t) + x1*t}
-// function invLerp1D(x0, x1, v){  return (v - x0) / (x1 - x0) } // mix?
-// // if same point then it gives me infinity, hence NaN.
-// function roundColor(color){ return [round(color[0]),round(color[1]),round(color[2])] }
-// function capHSV(color){ /* hue is cylical */
-//     return [ color[0]%360*360, max(min(color[1], 0), 1), max(min(color[2], 0), 1)  ]; }
-// function valueToGradient_EXAMPLE(){ // loadPixels();
-//     var positions = [0, 0.5, 1]; 
-//     var colors = [[200, 0.7, 1], [360, 0.9, 1], [0, 0.5, 1]]; 
-//     for (let x=0;x<width;x++){
-//         var val = x/width;
-//         var newcolor = valueToGradient(val, colors, positions);
-//         var newColor = hsv_to_rgb(newcolor); 
-//         var gradient_Value_RISKY_TEST = gradient_Value_RISKY(rgb_to_hsv(newColor), colors, positions);
-//         if (gradient_Value_RISKY_TEST == val){ newColor = [newColor[0]*0.99, max(newColor[1]*1.01, 255), newColor[2]*0.99]; }
-//         else { console.log(val,gradient_Value_RISKY_TEST)  }
-//         newColor.push(255); // transparency 
-//     for (let y=0;y<height;y++){ setPixel(x, y, newColor); }
-// } //updatePixels();
-// }
-// /* These are for after you set the value :)
-// Greyscale mode ==> read R/G/B out of 255
-// HSV mode ==> read H out of 360
-// Color gradient mode ==> color interpolation
-// */
-
-// function greyscale_Value(color, index=0){ return (color[index]/255.); }
-// function hsv_Value(color){ return rgb_to_hsv(color)[0]/360; }
-// ======================================================================
-
 // FOR NOISE: disable the things above /* else */ to see values that don't make it (flaw)
 function valueToGradient(val, colors, positions, enabled=false){ // assuming 0-1, a list of hsv values and a list of their positions (0 to 1)
     if (colors[0].length == undefined) { colors = [colors]; } // must be a list
@@ -134,7 +97,6 @@ function waitPresent1(myTargetVariables){
     return true;
 }
 var waitsettings = {timer:3, targetLength: 1, verbose: false};
-
 
 // Voronoi & FBM is going to be 100% slow, I can't help it
 // ========== [NOISE] =============
@@ -310,7 +272,7 @@ Frame Rate: <div class="${ePrefix+"frameRateDisplay"}"></div>
 Limit Frame Rate for DW: <button class="${ePrefix+"cfrBtn"}">On</button><br>
 Toggle G <button class="${ePrefix+"toggleDspBtn"}">Off</button>
 V. w/in Circle <button class="${ePrefix+"toggleCircleBounds"}">On</button>
-
+Process each FBM layer <button class="${ePrefix+"toggleProcessBtn"}">On</button>
 </td></tr>
 
 <tr><td>Quick:</td><td>
@@ -522,6 +484,13 @@ Test: <button class="${ePrefix+"testingBtn"}">Off</button><br/>
             this.manager.toggleNormalizer();
         });});
 
+        this.toggleProcessBtn = this.WTL(this.WP1, this.WS, myForm, `[class*="${ePrefix+"toggleProcessBtn"}"]`); 
+        this.toggleProcessBtn.then(e => { this.toggleProcessBtn = e;
+        this.toggleProcessBtn.addEventListener("click", () => {
+            this.toggleButton(this.manager.toggle("processFBM"),  this.toggleProcessBtn);
+            this.manager.toggleProcess();
+        });});
+
         this.downloadBtn = this.WTL(this.WP1, this.WS, myForm, `[class*="${ePrefix+"DownloadBtn"}"]`); 
         this.downloadBtn.then(e => { this.downloadBtn = e;
         this.downloadBtn.addEventListener("click", () => {
@@ -647,7 +616,7 @@ class NoiseProgramManager{
         this.gradient5_pixel = function(val, colors=[[230, .5, .4], [250, .2, 1]], positions=[0, 1]){ return linear_gradient_pixel(val, colors, positions); };
         this.gradient6_pixel = function(val, colors=[[0, .9, .9], [260, .9, .9]], positions=[0, 1]){ return linear_gradient_pixel(val, colors, positions); };
         this.gradient7_pixel = function(val, colors=[[231, 0, 0], [231, 1, .3], [200, .6, .5]], positions=[0, 0.3, 1]){ return linear_gradient_pixel(val, colors, positions); };
-        this.gradient8_pixel = function(val, colors=[[300, .5, 1], [180, .5, 1], [60, .5, 1]], positions=[0, .5, 1]){ return linear_gradient_pixel(val, colors, positions, true); };
+        this.gradient8_pixel = function(val, colors=[[300, .5, 1], [60, .5, 1], [180, .5, 1], [300, .5, 1]], positions=[0, .33, .66, 1]){ return linear_gradient_pixel(val, colors, positions, true); };
 
         this.gradient9_pixel = function(val, colors=[[0, .8, .7], [69, 1, 1]], positions=[0, 1]){ return linear_gradient_pixel(val, colors, positions); };
         // this.gradient10_pixel = function(val, colors=[[20, 1, 1], [33, 1, 1], [50, .5, 0], [220, .5, 0], [220, .6, .6], [242, 1, .4]], positions=[0, .3, .5, .5, .7, 1]){ return linear_gradient_pixel(val, colors, positions); };
@@ -677,9 +646,9 @@ class NoiseProgramManager{
          which suggests that having a formulaic way to generate mag+vec 
         (with the capability to be reversed) is... impossible? */
         this.pixelArray = [];
-        for (var i = 0; i < this.height; i++) { this.pixelArray[i] = new Array(this.width); }
+        for (var i = 0; i < this.width; i++) { this.pixelArray[i] = new Array(this.height); }
         this.cloneArray = [];
-        for (var i = 0; i < this.height; i++) { this.cloneArray[i] = new Array(this.width); }
+        for (var i = 0; i < this.width; i++) { this.cloneArray[i] = new Array(this.height); }
 
         this.xOffsetRate = 0; this.yOffsetRate = 0;
         this.xOffset = 0; this.yOffset = 0; // after applying changeOffset()
@@ -718,6 +687,8 @@ class NoiseProgramManager{
                             [-1, 1], [0, 1], [1, 1]];
         this.enablePosMod = this.posMod.bind(this); // tile before calling noise function. (disabled for simplex)
         this.norm = true; this.enableNormalization = this.normalizerFunc.bind(this);
+        this.processFBM = true; this.enableProcess = this.processFunc.bind(this);
+
         this.resolution = 1; // unfortunately some stray edge pixels don't get caught but that's a job for another time
         this.minkowskiFactor = 4; this.gridFactor = 0;
         this.g = this.gain == 0 ? 1/this.lacunarity : this.gain;
@@ -754,8 +725,8 @@ class NoiseProgramManager{
         if (seed == undefined){ randomSeed(0); } /* from p5js, no native 🥲 */
         else { randomSeed(seed); }
         var fixedArray = [];
-        for (var y = 0; y < maxY; y++){ fixedArray.push([]);
-            for (var x = 0; x < maxX; x++){ fixedArray[y].push(random()) }}
+        for (var x = 0; x < maxX; x++){ fixedArray.push([]);
+            for (var y = 0; y < maxY; y++){ fixedArray[x].push(random()) }}
         return fixedArray; }
 
     randomVector(refX, refY){
@@ -787,7 +758,7 @@ class NoiseProgramManager{
         // return [x1, y1];
         // // [i want a spiral]
         // let t = this.fixedArray[refX][refY]*(1Math.PI*2);
-        // return [t*Math.cos(t)/76 +0.5, t*Math.sin(t)/76 + 0.5];
+        // return [t*Math.cos(t)/15 +0.5, t*Math.sin(t)/15 + 0.5];
         // [lazy vector]
         let t;
         t = this.N_directions == 0? 
@@ -835,9 +806,27 @@ class NoiseProgramManager{
         var c00 = this.distFunc2(this.randomVector(refX1, refY1), [xDif  ,yDif  ]); // dot
         var c10 = this.distFunc2(this.randomVector(refX2, refY1), [xDif-1,yDif  ]);
         var c01 = this.distFunc2(this.randomVector(refX1, refY2), [xDif  ,yDif-1]);
-        var c11 = this.distFunc2(this.randomVector(refX2, refY2), [xDif-1,yDif-1]);
+        var c11 = this.distFunc2(this.randomVector(refX2, refY2), [xDif-1,yDif-1]);        
+        // if (this.testing){ // LET'S TEST IT OUT
+        //     let g = [this.randomVector(refX1, refY1), 
+        //         this.randomVector(refX2, refY1),
+        //         this.randomVector(refX1, refY2),
+        //         this.randomVector(refX2, refY2) ];
+        //     c00 = this.distFunc2(g[0]                  , [xDif  ,yDif  ]);
+        //     c10 = this.distFunc2([g[1][0]-1, g[1][1]  ], [xDif  ,yDif  ]);
+        //     c01 = this.distFunc2([g[2][0]  , g[2][1]-1], [xDif  ,yDif  ]);
+        //     c11 = this.distFunc2([g[3][0]-1, g[3][1]-1], [xDif  ,yDif  ]); 
+        // }
         xDif = this.smoothFunc(xDif); yDif = this.smoothFunc(yDif);
         var x1 = lerp(c00, c10, xDif); var x2 = lerp(c01, c11, xDif); var val = lerp(x1, x2, yDif);
+        // if (this.testing) {
+        //     if (this.basicallyEqual(xDif, 0) &&  this.basicallyEqual(yDif, 0)){
+        //         console.log(val, c00, c10, c01, c11);
+        //         noLoop();
+        //     }
+        //     return this.basicallyEqual(xDif, 0) &&  this.basicallyEqual(yDif, 0)? 0.6: 0; }
+
+        // if (this.testing) {return this.basicallyEqual(val, 0)? 0.5: 0; }
         return val; 
         }
     // https://codeplea.com/triangular-interpolation
@@ -883,6 +872,7 @@ class NoiseProgramManager{
         // return this.fixedArray[this.fit(i, this.REPEAT_[0])][this.fit(j, this.REPEAT_[1])]; // see grid
         let t = (i+j)*-this.G2; // unskew
         let X0 = i+t,   Y0 = j+t; // return this.fixedArray[this.posMod(floor(X0), this.REPEAT_[0])][this.posMod(floor(Y0), this.REPEAT_[1])];
+        // if (this.basicallyEqual(X0, x) &&this.basicallyEqual(Y0, y)) return 1; else return 0; // vertex of skewed square
         let x0 = x-X0,  y0 = y-Y0; // return this.dotHandler([x0, y0]); // distance from cell origin (0, 0)
         
         // [1] Determine if upper or lower triangle through the halfway point. Diagonal seperation by y=x (but the square is skewed)
@@ -920,10 +910,12 @@ class NoiseProgramManager{
         t2 = this.smoothFunc(t2); // comically redundant
         t1 = this.smoothFunc(t1);
         t0 = this.smoothFunc(t0);
+        // return t0**4 + t1**4 + t2**4;
         let n = 0;
         if (t0 > 0){ t0 *= t0; n += t0*t0 * this.distFunc2(g0, [x0, y0]); } // if (t0 < 0) {} else { ... } idk if pow4 is slower.
         if (t1 > 0){ t1 *= t1; n += t1*t1 * this.distFunc2(g1, [x1, y1]); }
         if (t2 > 0){ t2 *= t2; n += t2*t2 * this.distFunc2(g2, [x2, y2]); } 
+        // return (t0 <= 0) && (t1 <= 0)? -100: n*70;
         return n*70; // idk where the 70 comes from or how to get it. *sqrt(2)
     } // normalize the same as perlin
     simplexModifiedNoise(x, y){
@@ -1025,9 +1017,9 @@ class NoiseProgramManager{
         let t1 = this.staticFalloff - x1*x1-y1*y1;
         let t2 = this.staticFalloff - x2*x2-y2*y2;        
         t0 *= 1.5, t1 *= 1.5, t2 *= 1.5; //then n *2.5 but i like the hex it produces :)
-        // t2 = this.smoothFunc(t2);
-        // t1 = this.smoothFunc(t1);
-        // t0 = this.smoothFunc(t0);
+        t2 = this.smoothFunc(t2);
+        t1 = this.smoothFunc(t1);
+        t0 = this.smoothFunc(t0);
 
         if (t0 > 0){ t0 *= t0; n += t0*t0*this.distFunc2(g0, [x0, y0]); } // if t0 == 0 then there's no need to add anything right? :)
         if (t1 > 0){ t1 *= t1; n += t1*t1*this.distFunc2(g1, [x1, y1]); }
@@ -1065,7 +1057,6 @@ class NoiseProgramManager{
         /* i don't know how to optimize, deal with it. */
         var cellPos, n, minDistance = 4; //this.vnorm*2;        
         for (let i=0; i<this.gridPoints.length; i++){
-            // let offset = this.gridPoints[i];
             cellPos = this.randomCoord(this.fit(refX1+this.gridPoints[i][0], this.REPEAT_[0]), this.fit(refY1+this.gridPoints[i][1], this.REPEAT_[1]));
             cellPos = [cellPos[0] + this.gridPoints[i][0] - xDif, cellPos[1] + this.gridPoints[i][1] - yDif ]; // + offset for position relative to center cell at (RefX, RefY) 
             // n = this.dot(cellPos, cellPos);
@@ -1073,17 +1064,16 @@ class NoiseProgramManager{
             // n = this.chebyshev([0, 0], cellPos);
             // n = this.minkowski([0, 0], cellPos, this.testFactor); // floats are bad. 1 is bad. odd numbers are bad.
             n = this.distFunc(cellPos);
-            // minDistance = min(minDistance, n) = min(minDistance, round(n*(this.vnorm)));
-            // minDistance = this.min(minDistance, round(n*this.vnorm));
+            // // minDistance = min(minDistance, n) = min(minDistance, round(n*(this.vnorm)));
+            // // minDistance = this.min(minDistance, round(n*this.vnorm));
             minDistance = minDistance < n? minDistance:n;
             // lag central
-            // cellPos = [cellPos[0] + offset[0] + xCel , cellPos[1] + offset[1] + yCel ];
-            // var n = dist(cellPos[0], cellPos[1], x, y)/Math.sqrt(2);
+            // var n = dist(cellPos[0], cellPos[1], xDif, yDif)/Math.sqrt(2);
             // if (n < minDistance){ minDistance = n; }
         }
         // return this.smoothFunc(minDistance/this.vnorm)
         // return this.smoothFunc(Math.sqrt(minDistance/this.vnorm/2)); //*this.sqrtH;
-        return this.smoothFunc(Math.sqrt(minDistance*.5));
+        return this.smoothFunc(Math.sqrt(minDistance));
         // [3] Distance to nearest border
         // for (let i=0; i<this.gridPoints.length; i++){ ... }        
     }
@@ -1135,6 +1125,7 @@ class NoiseProgramManager{
         
         return this.F2VMode == 0 ? this.smoothFunc(Math.sqrt(min(minDistances) )/2) // welp i tried
          :this.F2VMode == 2? this.smoothFunc(Math.sqrt((min(minDistances) - firstMin) )/2)
+        //  this.basicallyEqual(Math.sqrt((min(minDistances) - firstMin) )/2, 0)? 100 :Math.sqrt((min(minDistances) - firstMin) )/2
          :this.F2VMode == 3? this.smoothFunc((Math.sqrt(min(minDistances) + Math.sqrt(firstMin)) )/2) // watery
          :this.smoothFunc((Math.sqrt(min(minDistances)) + Math.sqrt(firstMin))/2 ); // bacteria-y
     } // didn't check the range 😋
@@ -1153,18 +1144,18 @@ class NoiseProgramManager{
         } 
         return this.smoothFunc(pow( 1.0/smoothDistance, 1.0/16.0)); 
     }
+    // https://www.ronja-tutorials.com/post/028-voronoi-noise/
     bordervoronoiNoise(x,y){
         const refX1 = Math.floor(x), xDif = x-refX1; 
         const refY1 = Math.floor(y), yDif = y-refY1; 
         let cellPos = []; // the 9 looped calculations stored in array.
         let minCell = -1, n, fitted, minDistance = 4; // minCell is index. n temporary
-        var minEdgeDistance = 10*this.vnorm, toCenter, cellDiff, edgeDist;
+        var toCenter, cellDiff, edgeDist, minEdgeDistance=10;
         for (let i=0; i<this.gridPoints.length; i++){
             fitted = [this.fit(refX1+this.gridPoints[i][0], this.REPEAT_[0]), this.fit(refY1+this.gridPoints[i][1], this.REPEAT_[1])];
             cellPos.push(this.randomCoord(fitted[0], fitted[1]));
             cellPos[i] = [cellPos[i][0] + this.gridPoints[i][0] - xDif, cellPos[i][1] + this.gridPoints[i][1] - yDif ];
             n = this.dot(cellPos[i], cellPos[i]); // if centered at (x, y), it points to the other feature points. 
-            // n = Math.ceil(n * this.vnorm);
             // if (n < minDistance){  minDistance = n; minCell = i; }
             minCell = minDistance < n? minCell:i;
             minDistance = minDistance < n? minDistance:n;
@@ -1173,28 +1164,24 @@ class NoiseProgramManager{
         for (let i=0; i<this.gridPoints.length; i++){
             if (minCell == i){ continue; } // skip. excluding closest cell
             // toCenter = [(cellPos[i][0]+cellPos[minCell][0])*.5, // center of closest feature and current feature
-            //             (cellPos[i][1]+cellPos[minCell][1])*.5];
+            //             ([i][1]+cellPos[minCell][1])*.5];
             toCenter = [(cellPos[i][0]+cellPos[minCell][0]),   // do you really need to /2? i guess to avoid the flat surfaces.
                         (cellPos[i][1]+cellPos[minCell][1])];
             cellDiff = [cellPos[i][0]-cellPos[minCell][0],  // feature - closest feature
                         cellPos[i][1]-cellPos[minCell][1] ];
-            // cellDiff = [cellPos[i][0]-2*cellPos[minCell][0],  // blobby :3
+            // cellDiff = [cellPos[i][0]-2*cellPos[minCell][0],  // blobby :3 (sharp edges tho)
             //             cellPos[i][1]-2*cellPos[minCell][1] ];
-            /*  
-                cellOffsetB + refOffsetB + cellOffsetA + refOffsetA - 2frac
-                (cellOffsetA + refOffsetA) - frac - ((cellOffsetB + refOffsetB) - frac)
-                = (cellOffsetA + refOffsetA - cellOffsetB - refOffsetB)
-            */
             // edgeDist = this.dot(toCenter, cellDiff)
             edgeDist = this.distFunc2(toCenter, cellDiff);
-            // minEdgeDistance = min(minEdgeDistance, round(edgeDist*this.vnorm)); = this.min(minEdgeDistance, ceil(edgeDist*this.vnorm));
+            
+            cellPos.push(this.randomCoord(fitted[0], fitted[1]));
             minEdgeDistance = minEdgeDistance < edgeDist? minEdgeDistance : edgeDist
             // console.log(edgeDist, toCenter, cellDiff)
         }
-        minEdgeDistance*=.5;
-        // If you don't *.5: -0.00390625 (which is the smallest difference of 256, essentially 0 =_=) to 1.6484375
+        minEdgeDistance *= .5;
         // if ((minEdgeDistance/this.vnorm >1 ) || (minEdgeDistance/this.vnorm < 0)){ console.log(minEdgeDistance/this.vnorm)}
-        return minEdgeDistance; ///this.vnorm;
+        // return this.basicallyEqual(minEdgeDistance, 0)? 100 :minEdgeDistance;
+        return minEdgeDistance; 
     }
     // ======================================================================
     /* Ultra Lag
@@ -1256,12 +1243,13 @@ class NoiseProgramManager{
 
     /* Displaying Functions */
     FBM(x, y, origX, origY, divider=1){
-        let n = 0, amplitude = 1, frequencyX = x; var frequencyY = y;
+        let n = 0, amplitude = 1, frequencyX = x; var frequencyY = y; // start w/ amplitude = 1 to avoid re-calculating rate**(layer-1) 
         for (let l=0; l<this.layers; l++){
             n += 
-                this.processFunc(
+                this.enableProcess(
                     this.enableNormalization(this.noiseFunc(this.enablePosMod(frequencyX, this.REPEAT_[0]), this.enablePosMod(frequencyY, this.REPEAT_[1])))*this.amp
-                    , origX, origY) // optional process func?
+                    , origX, origY
+                ) // optional process func?
                 * amplitude;    
             amplitude *= this.g; frequencyX *= this.lacunarity; frequencyY *= this.lacunarity;
         }
@@ -1342,23 +1330,23 @@ class NoiseProgramManager{
         }}
     }
     testForMinMax(){ // oh :|
-        let testBoundary = [500, -500, false];
+        this.testBoundary = [500, -500, false];
         for (var y = 0; y < this.height; y++){ // find min/max
             for (var x = 0; x < this.width; x++){
                 var n = this.pixelArray[y][x];
                 n = n != n? "bruh": n; // deal w/ NaN
-                if (n == "bruh"){ testBoundary[2] = true; continue; }
-                testBoundary[0] = testBoundary[0] < n? testBoundary[0]: n;
-                testBoundary[1] = testBoundary[1] > n? testBoundary[1]: n;
+                if (n == "bruh"){ this.testBoundary[2] = true; continue; }
+                this.testBoundary[0] = this.testBoundary[0] < n? this.testBoundary[0]: n;
+                this.testBoundary[1] = this.testBoundary[1] > n? this.testBoundary[1]: n;
             }}
         if (this.autonorm){
         for (var y = 0; y < this.height; y++){ // auto norm values. ugly 3 loops D:
             for (var x = 0; x < this.width; x++){
-                this.pixelArray[y][x] = this.remap(this.pixelArray[y][x], testBoundary[0], testBoundary[1], 0, 1);
+                this.pixelArray[y][x] = this.remap(this.pixelArray[y][x], this.testBoundary[0], this.testBoundary[1], 0, 1);
                 this.pixelArray[y][x] *= this.amp;  // extremely lazy
         }}}
         document.querySelector('[class*="display_Test"]').innerHTML = 
-            `${this.rPout(testBoundary[0])} ${this.rPout(testBoundary[1])} ${testBoundary[2]?"(NaN present)":""}`;
+            `${this.rPout(this.testBoundary[0])} ${this.rPout(this.testBoundary[1])} ${this.testBoundary[2]?"(NaN present)":""}`;
     }
     fixResolution(){  // need to consider gridding separately
         // In consideration of resolution steps... each pixel is magnified
@@ -1366,14 +1354,14 @@ class NoiseProgramManager{
             for (var x = 0; x < this.staticWidth; x++){
                 var n = this.pixelArray[this.nearestFunc(y/this.resolution)][this.nearestFunc(x/this.resolution)]; // to the value at the floor
                 // var n = this.pixelArray[y][x];
-                this.cloneArray[y][x] = n;
+                this.cloneArray[x][y] = n;
         }} // if we only set the values of a smaller arrai
         //unfortunately this causes the graph to shrink because it doesn't actually blur
     }
     loadImage(){
         for (var y = 0; y < this.staticHeight; y++){ // set pixels
             for (var x = 0; x < this.staticWidth; x++){
-                var n = this.moreFunc(this.cloneArray[y][x], x+this.xOffset, y+this.yOffset, this.nearestFunc(x/this.resolution),this.nearestFunc(y/this.resolution));                
+                var n = this.moreFunc(this.cloneArray[x][y], x+this.xOffset, y+this.yOffset, this.nearestFunc(x/this.resolution),this.nearestFunc(y/this.resolution));                
                 // check min/max here if ignoring auto norm
                 if (this.colorInverse){ n = 1-n; };  //  if (this.colorInverse){ n = 1-n; };  cry about it        
                 let color = this.colorFunc(n);
@@ -1472,7 +1460,7 @@ class NoiseProgramManager{
         //     for (let x = 0; x < w; x++){ this.pixelArray[y2][round(x/this.freq)] *= 1.5; }}
         return n;
     }
-    griddingSimplex(n=0, x=0, y=0, half=false){
+    griddingSimplex(n=0, x=0, y=0, half=true){
         let f=this.freq;
         x *= f; y *= f;
         let Ref = this.unskewPoint(x, y);
@@ -1498,6 +1486,7 @@ class NoiseProgramManager{
 
     marble(n, x=0){ //  f = 0.01, FBM and this.marbles = 100;
         // failed return sin(n*100*Math.PI*2)+1;
+    // why isn't this symmetric
         return (Math.sin(((x * this.resolution+this.xOffset)+100*n) * (1/this.marbles) * Math.PI*2) + 1) / 2; }
     wood(n){ return n*this.woods - Math.floor(n*this.woods); }
     // central(n, x=0, y=0) { for (let i =0; i < int(this.testFactor); i++){ n = Math.abs(n-(int(this.testFactor)/(int(this.testFactor)+1))); } return n }
@@ -1663,8 +1652,8 @@ class NoiseProgramManager{
         if (key == "moreFunc") { 
             if (btn.value == 1){ this[key] = this.oil.bind(this); // requires information from other pixels :) i.e. not standalone
             } else if (btn.value == 2) { this[key] = this.gridding.bind(this); 
-            } else if (btn.value == 3) { this[key] = this.griddingSimplex.bind(this);
-            } else if (btn.value == 4) { this[key] = function (n, x, y, x2, y2){ return this.griddingSimplex(n, x, y, true) } ;
+            } else if (btn.value == 3) { this[key] = function (n, x, y, x2, y2){ return this.griddingSimplex(n, x, y, false) }; // this.griddingSimplex.bind(this);
+            } else if (btn.value == 4) { this[key] = this.griddingSimplex.bind(this);// function (n, x, y, x2, y2){ return this.griddingSimplex(n, x, y) };
             } else {this[key] = this.defaultWrapper.bind(this); }
             this.moreMode = btn.value;
         }
@@ -1691,6 +1680,7 @@ class NoiseProgramManager{
             //                          From hard coded conditions or each time something is changed?"
         }
         this.toggleNormalizer();
+        this.toggleProcess();
     }
     toggleNoLoop(){
         this.noLoopVar = !this.noLoopVar;
@@ -1704,6 +1694,11 @@ class NoiseProgramManager{
         if (this.norm){ this.enableNormalization = this.normalizerFunc.bind(this); }
         else { this.enableNormalization = this.defaultWrapper.bind(this); }
     }
+    toggleProcess(){ 
+        if (this.processFBM){ this.enableProcess = this.processFunc.bind(this); }
+        else { this.enableProcess = this.defaultWrapper.bind(this); }
+    }
+
     /* Change specific rotations */
     handlePress(){
         if (mouseX < this.staticWidth && mouseY < this.staticHeight // within canvas
