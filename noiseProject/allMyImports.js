@@ -610,7 +610,7 @@ class NoiseProgramManager{
         this.posMod = posMod.bind(this);
         // this.gradient1_pixel = linear_gradient_pixel.bind(this);
         this.hue = 0;
-        this.gradient1_pixel = function(val, colors=[[200+(this.hue), 0.9, 0.9], [359+(this.hue), 0.4, 1]], positions=[0, 1]){ return linear_gradient_pixel(val, colors, positions); };
+        this.gradient1_pixel = function(val, colors=[[200+int(this.hue), 0.9, 0.9], [359+int(this.hue), 0.4, 1]], positions=[0, 1]){ return linear_gradient_pixel(val, colors, positions); };
         this.gradient2_pixel = function(val, colors=[[0+int(this.hue), .9, .9], [80+int(this.hue), .2, 1], [170+int(this.hue), .2, 1], [250+int(this.hue), .9, .9]], positions=[0, .5, .5, 1]){ return linear_gradient_pixel(val, colors, positions); };
         this.gradient3_pixel = function(val, colors=[[255+int(this.hue), 1, .5], [360+int(this.hue), .7, .8], [60+int(this.hue), 1, 1]], positions=[0, .5, 1]){ return linear_gradient_pixel(val, colors, positions, true); };
         
