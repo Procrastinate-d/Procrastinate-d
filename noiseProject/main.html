@@ -109,11 +109,11 @@ User manual:
         [Layers] Recommended < 5 and f < 0.03. (warning: slow, especially w/ Voronoi)
         [Lacunarity] I think it's how "fractal" it is. Avoid < 1.
         [Gain] Persistence of rice.
+        [Process] Toggle to do it for each layer or once only.
 
         [Domain Warping] (DMW) please reduce resolution if too slow, use auto norm & lower frequencies.
         [Lighting] recommended x.5 resolution, layers > 2
         [Norm] Toggle default normalization (perlin & simplex). Affects DMW. 
-
     [4] Processing Features
         [Turbulence] Recommended for Perlin + FBM
         [Marble] Recommended > 50, close zoom for Perlin + FBM
@@ -136,9 +136,13 @@ User manual:
     Relevant resources in allMyImport.js
     Seed slider (no. >:) )    
     This is a generic noise program for learning and is not built for speed.
-    
+    I may have gotten x & y for fixed array mixed up
+
     Strange bugs may appear:
         The clicking function may cause a "cell" to become black if the difference is 0 (NaN error)
         Settings fail to apply. When reloading to get the page, it looks different :/
-</textarea>
+    To fix:
+        Lighting + Box blend to Simplex = die (enableposMod error)
+        is fbm norm not working?
+    </textarea>
 </body>
