@@ -607,32 +607,33 @@ class NoiseProgramManager{
         this.hsv_pixel = hsv_pixel.bind(this);
         this.greyscale_pixel = greyscale_pixel.bind(this);
         this.easeInOutSine = easeInOutSine.bind(this);
-        this.gradient1_pixel = linear_gradient_pixel.bind(this);
         this.posMod = posMod.bind(this);
-        this.gradient2_pixel = function(val, colors=[[0, .9, .9], [80, .2, 1], [170, .2, 1], [250, .9, .9]], positions=[0, .5, .5, 1]){ return linear_gradient_pixel(val, colors, positions); };
-        this.gradient3_pixel = function(val, colors=[[255, 1, .5], [360, .7, .8], [60, 1, 1]], positions=[0, .5, 1]){ return linear_gradient_pixel(val, colors, positions, true); };
-        
-        this.gradient4_pixel = function(val, colors=[[300, .6, .9], [140, .6, .9]], positions=[0, 1]){ return linear_gradient_pixel(val, colors, positions); };
-        this.gradient5_pixel = function(val, colors=[[230, .5, .4], [250, .2, 1]], positions=[0, 1]){ return linear_gradient_pixel(val, colors, positions); };
-        this.gradient6_pixel = function(val, colors=[[0, .9, .9], [260, .9, .9]], positions=[0, 1]){ return linear_gradient_pixel(val, colors, positions); };
-        this.gradient7_pixel = function(val, colors=[[231, 0, 0], [231, 1, .3], [200, .6, .5]], positions=[0, 0.3, 1]){ return linear_gradient_pixel(val, colors, positions); };
-        this.gradient8_pixel = function(val, colors=[[300, .5, 1], [60, .5, 1], [180, .5, 1], [300, .5, 1]], positions=[0, .33, .66, 1]){ return linear_gradient_pixel(val, colors, positions, true); };
-
-        this.gradient9_pixel = function(val, colors=[[0, .8, .7], [69, 1, 1]], positions=[0, 1]){ return linear_gradient_pixel(val, colors, positions); };
-        // this.gradient10_pixel = function(val, colors=[[20, 1, 1], [33, 1, 1], [50, .5, 0], [220, .5, 0], [220, .6, .6], [242, 1, .4]], positions=[0, .3, .5, .5, .7, 1]){ return linear_gradient_pixel(val, colors, positions); };
-        this.gradient10_pixel = function(val, colors=[[80, .8, 1], [115, 1, .2]], positions=[0, 1]){ return linear_gradient_pixel(val, colors, positions); };
-        this.gradient11_pixel = function(val, colors=[[234, 1, .4], [195, 1, .7], [195, 0, .9]], positions=[0, .5, 1]){ return linear_gradient_pixel(val, colors, positions); };  // hsl!!! is bad in the case where dark green => blue
-        this.gradient12_pixel = function(val, colors=[[285, .5, .7], [300, .2, .9], [320, .4, .9], [350, .81, .9]], positions=[0, .4, .8, 1]){ return linear_gradient_pixel(val, colors, positions, true); };
-        this.gradient13_pixel = function(val, colors=[[28, .5, .8], [20, .8, .4], [15, .4, .5]], positions=[0, .7, 1]){ return linear_gradient_pixel(val, colors, positions); };
+        // this.gradient1_pixel = linear_gradient_pixel.bind(this);
         this.hue = 0;
+        this.gradient1_pixel = function(val, colors=[[200+(this.hue), 0.9, 0.9], [359+(this.hue), 0.4, 1]], positions=[0, 1]){ return linear_gradient_pixel(val, colors, positions); };
+        this.gradient2_pixel = function(val, colors=[[0+int(this.hue), .9, .9], [80+int(this.hue), .2, 1], [170+int(this.hue), .2, 1], [250+int(this.hue), .9, .9]], positions=[0, .5, .5, 1]){ return linear_gradient_pixel(val, colors, positions); };
+        this.gradient3_pixel = function(val, colors=[[255+int(this.hue), 1, .5], [360+int(this.hue), .7, .8], [60+int(this.hue), 1, 1]], positions=[0, .5, 1]){ return linear_gradient_pixel(val, colors, positions, true); };
+        
+        this.gradient4_pixel = function(val, colors=[[300+int(this.hue), .6, .9], [140+int(this.hue), .6, .9]], positions=[0, 1]){ return linear_gradient_pixel(val, colors, positions); };
+        this.gradient5_pixel = function(val, colors=[[230+int(this.hue), .5, .4], [250+int(this.hue), .2, 1]], positions=[0, 1]){ return linear_gradient_pixel(val, colors, positions); };
+        this.gradient6_pixel = function(val, colors=[[0+int(this.hue), .9, .9], [260+int(this.hue), .9, .9]], positions=[0, 1]){ return linear_gradient_pixel(val, colors, positions); };
+        this.gradient7_pixel = function(val, colors=[[231+int(this.hue), 0, 0], [231+int(this.hue), 1, .3], [200+int(this.hue), .6, .5]], positions=[0, 0.3, 1]){ return linear_gradient_pixel(val, colors, positions); };
+        this.gradient8_pixel = function(val, colors=[[300+int(this.hue), .5, 1], [60+int(this.hue), .5, 1], [180+int(this.hue), .5, 1], [300+int(this.hue), .5, 1]], positions=[0, .33, .66, 1]){ return linear_gradient_pixel(val, colors, positions, true); };
+
+        this.gradient9_pixel = function(val, colors=[[0+int(this.hue), .8, .7], [69+int(this.hue), 1, 1]], positions=[0, 1]){ return linear_gradient_pixel(val, colors, positions); };
+        // this.gradient10_pixel = function(val, colors=[[20, 1, 1], [33, 1, 1], [50, .5, 0], [220, .5, 0], [220, .6, .6], [242, 1, .4]], positions=[0, .3, .5, .5, .7, 1]){ return linear_gradient_pixel(val, colors, positions); };
+        this.gradient10_pixel = function(val, colors=[[80+int(this.hue), .8, 1], [115+int(this.hue), 1, .2]], positions=[0, 1]){ return linear_gradient_pixel(val, colors, positions); };
+        this.gradient11_pixel = function(val, colors=[[234+int(this.hue), 1, .4], [195+int(this.hue), 1, .7], [195+int(this.hue), 0, .9]], positions=[0, .5, 1]){ return linear_gradient_pixel(val, colors, positions); };  // hsl!!! is bad in the case where dark green => blue
+        this.gradient12_pixel = function(val, colors=[[285+int(this.hue), .5, .7], [300+int(this.hue), .2, .9], [320+int(this.hue), .4, .9], [350+int(this.hue), .81, .9]], positions=[0, .4, .8, 1]){ return linear_gradient_pixel(val, colors, positions, true); };
+        this.gradient13_pixel = function(val, colors=[[28+int(this.hue), .5, .8], [20+int(this.hue), .8, .4], [15+int(this.hue), .4, .5]], positions=[0, .7, 1]){ return linear_gradient_pixel(val, colors, positions); };
         // ah. my problem is im asking for a linear gradient and not a hue one :L
-        this.gradient14_pixel = function(val, colors=[[60, .7, .9], [100, .9, .5], [120, .7, .1]], positions=[0, 0.5, 1]){ return linear_gradient_pixel(val, colors, positions); };
+        this.gradient14_pixel = function(val, colors=[[60+int(this.hue), .7, .9], [100+int(this.hue), .9, .5], [120+int(this.hue), .7, .1]], positions=[0, 0.5, 1]){ return linear_gradient_pixel(val, colors, positions); };
         // this.gradient15_pixel = function(val, colors=[[277, 1, 1], [247, 1, .6], [188, .7, .9], [218, .5, .9]], positions=[0, .2, .7, 1]){ return linear_gradient_pixel(val, colors, positions); };
-        this.gradient15_pixel = function(val, colors=[[340, .3, 1], [277, .6, 1], [247, 1, .6], [240, .7, .9]], positions=[0, .2, .7, 1]){ return linear_gradient_pixel(val, colors, positions); };
-        this.gradient16_pixel = function(val, colors=[[118, .9, .5], [118, .9, .9],  [0, .9, .9]], positions=[0, .3, 1]){ return linear_gradient_pixel(val, colors, positions); };
+        this.gradient15_pixel = function(val, colors=[[340+int(this.hue), .3, 1], [277+int(this.hue), .6, 1], [247+int(this.hue), 1, .6], [240+int(this.hue), .7, .9]], positions=[0, .2, .7, 1]){ return linear_gradient_pixel(val, colors, positions); };
+        this.gradient16_pixel = function(val, colors=[[118+int(this.hue), .9, .5], [118+int(this.hue), .9, .9], [0+int(this.hue), .9, .9]], positions=[0, .3, 1]){ return linear_gradient_pixel(val, colors, positions); };
         this.gradient17_pixel = function(val, colors=[[int(this.hue), .9, .5], [int(this.hue)+4, .1, 1]], positions=[0, 1]){ return linear_gradient_pixel(val, colors, positions); };
         this.gradient18_pixel = function(val, colors=[[int(this.hue), .9, .9], [int(this.hue), .9, 0]], positions=[0, 1]){ return linear_gradient_pixel(val, colors, positions); };
-
+        
         this.staticWidth = canvasSize[0]; this.staticHeight = canvasSize[1];
         this.width = canvasSize[0]; this.height = canvasSize[1];
         this.REPEAT = [256, 256]; // please don't dynamically change it to be bigger :)
@@ -1073,7 +1074,7 @@ class NoiseProgramManager{
         }
         // return this.smoothFunc(minDistance/this.vnorm)
         // return this.smoothFunc(Math.sqrt(minDistance/this.vnorm/2)); //*this.sqrtH;
-        return this.smoothFunc(Math.sqrt(minDistance));
+        return this.smoothFunc(Math.sqrt(minDistance*.5)); // to keep or not to keep that is the question
         // [3] Distance to nearest border
         // for (let i=0; i<this.gridPoints.length; i++){ ... }        
     }
