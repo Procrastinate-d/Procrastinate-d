@@ -98,6 +98,7 @@ function waitPresent1(myTargetVariables){
 }
 var waitsettings = {timer:3, targetLength: 1, verbose: false};
 
+
 // Voronoi & FBM is going to be 100% slow, I can't help it
 // ========== [NOISE] =============
 class NoiseUIManager{
@@ -273,6 +274,7 @@ Limit Frame Rate for DW: <button class="${ePrefix+"cfrBtn"}">On</button><br>
 Toggle G <button class="${ePrefix+"toggleDspBtn"}">Off</button>
 V. w/in Circle <button class="${ePrefix+"toggleCircleBounds"}">On</button>
 Process each FBM layer <button class="${ePrefix+"toggleProcessBtn"}">On</button>
+Enable last <button class="${ePrefix+"toggleProcessLastBtn"}">On</button>
 </td></tr>
 
 <tr><td>Quick:</td><td>
@@ -302,7 +304,7 @@ Value: <div class="${ePrefix+"display_Picker"}" style="vertical-align:top">:D<br
 <input type="range" min="0" max="5" value="0" step="0.1"    class="slider ${ePrefix+"oSlider"}"/>Grid:       <div class="${ePrefix+"display_oSlider"}">0</div><br/>
 <input type="range" min="0" max="10" value="4" step="0.01"  class="slider ${ePrefix+"jSlider"}"/>Strength:   <div class="${ePrefix+"display_jSlider"}">4</div><br/>
 <input type="range" min="0.001" max="2" value="0.01" step="0.001" class="slider ${ePrefix+"kSlider"}"/>Diff:       <div class="${ePrefix+"display_kSlider"}">0.01</div><br/>
-<input type="range" min="0" max="360" value="0"             class="slider ${ePrefix+"hSlider"}"/>Hue:        <div class="${ePrefix+"display_hSlider"}">2</div><br/>
+<input type="range" min="0" max="360" value="0"             class="slider ${ePrefix+"hSlider"}"/>Hue:        <div class="${ePrefix+"display_hSlider"}">0</div><br/>
 <input type="range" min="-20" max="20" value="2"            class="slider ${ePrefix+"tSlider"}"/>Test:       <div class="${ePrefix+"display_tSlider"}">0</div><br/>
 
 Test: <button class="${ePrefix+"testingBtn"}">Off</button><br/>
@@ -490,6 +492,12 @@ Test: <button class="${ePrefix+"testingBtn"}">Off</button><br/>
             this.toggleButton(this.manager.toggle("processFBM"),  this.toggleProcessBtn);
             this.manager.toggleProcess();
         });});
+        this.toggleProcessLastBtn = this.WTL(this.WP1, this.WS, myForm, `[class*="${ePrefix+"toggleProcessLastBtn"}"]`); 
+        this.toggleProcessLastBtn.then(e => { this.toggleProcessLastBtn = e;
+        this.toggleProcessLastBtn.addEventListener("click", () => {
+            this.toggleButton(this.manager.toggle("processLastFBM"),  this.toggleProcessLastBtn);
+            this.manager.toggleProcess();
+        });});
 
         this.downloadBtn = this.WTL(this.WP1, this.WS, myForm, `[class*="${ePrefix+"DownloadBtn"}"]`); 
         this.downloadBtn.then(e => { this.downloadBtn = e;
@@ -607,9 +615,10 @@ class NoiseProgramManager{
         this.hsv_pixel = hsv_pixel.bind(this);
         this.greyscale_pixel = greyscale_pixel.bind(this);
         this.easeInOutSine = easeInOutSine.bind(this);
+        this.hue = 0;
         this.posMod = posMod.bind(this);
         // this.gradient1_pixel = linear_gradient_pixel.bind(this);
-        this.hue = 0;
+
         this.gradient1_pixel = function(val, colors=[[200+int(this.hue), 0.9, 0.9], [359+int(this.hue), 0.4, 1]], positions=[0, 1]){ return linear_gradient_pixel(val, colors, positions); };
         this.gradient2_pixel = function(val, colors=[[0+int(this.hue), .9, .9], [80+int(this.hue), .2, 1], [170+int(this.hue), .2, 1], [250+int(this.hue), .9, .9]], positions=[0, .5, .5, 1]){ return linear_gradient_pixel(val, colors, positions); };
         this.gradient3_pixel = function(val, colors=[[255+int(this.hue), 1, .5], [360+int(this.hue), .7, .8], [60+int(this.hue), 1, 1]], positions=[0, .5, 1]){ return linear_gradient_pixel(val, colors, positions, true); };
@@ -633,7 +642,7 @@ class NoiseProgramManager{
         this.gradient16_pixel = function(val, colors=[[118+int(this.hue), .9, .5], [118+int(this.hue), .9, .9], [0+int(this.hue), .9, .9]], positions=[0, .3, 1]){ return linear_gradient_pixel(val, colors, positions); };
         this.gradient17_pixel = function(val, colors=[[int(this.hue), .9, .5], [int(this.hue)+4, .1, 1]], positions=[0, 1]){ return linear_gradient_pixel(val, colors, positions); };
         this.gradient18_pixel = function(val, colors=[[int(this.hue), .9, .9], [int(this.hue), .9, 0]], positions=[0, 1]){ return linear_gradient_pixel(val, colors, positions); };
-        
+
         this.staticWidth = canvasSize[0]; this.staticHeight = canvasSize[1];
         this.width = canvasSize[0]; this.height = canvasSize[1];
         this.REPEAT = [256, 256]; // please don't dynamically change it to be bigger :)
@@ -689,6 +698,7 @@ class NoiseProgramManager{
         this.enablePosMod = this.posMod.bind(this); // tile before calling noise function. (disabled for simplex)
         this.norm = true; this.enableNormalization = this.normalizerFunc.bind(this);
         this.processFBM = true; this.enableProcess = this.processFunc.bind(this);
+        this.processLastFBM = true; this.enableProcessLast =this.processFunc.bind(this);
 
         this.resolution = 1; // unfortunately some stray edge pixels don't get caught but that's a job for another time
         this.minkowskiFactor = 4; this.gridFactor = 0;
@@ -1074,7 +1084,7 @@ class NoiseProgramManager{
         }
         // return this.smoothFunc(minDistance/this.vnorm)
         // return this.smoothFunc(Math.sqrt(minDistance/this.vnorm/2)); //*this.sqrtH;
-        return this.smoothFunc(Math.sqrt(minDistance*.5)); // to keep or not to keep that is the question
+        return this.smoothFunc(Math.sqrt(minDistance*.5)); // to keep or not to keep *.5 that is the question
         // [3] Distance to nearest border
         // for (let i=0; i<this.gridPoints.length; i++){ ... }        
     }
@@ -1165,7 +1175,7 @@ class NoiseProgramManager{
         for (let i=0; i<this.gridPoints.length; i++){
             if (minCell == i){ continue; } // skip. excluding closest cell
             // toCenter = [(cellPos[i][0]+cellPos[minCell][0])*.5, // center of closest feature and current feature
-            //             ([i][1]+cellPos[minCell][1])*.5];
+            //             (cellPos[i][1]+cellPos[minCell][1])*.5];
             toCenter = [(cellPos[i][0]+cellPos[minCell][0]),   // do you really need to /2? i guess to avoid the flat surfaces.
                         (cellPos[i][1]+cellPos[minCell][1])];
             cellDiff = [cellPos[i][0]-cellPos[minCell][0],  // feature - closest feature
@@ -1174,8 +1184,6 @@ class NoiseProgramManager{
             //             cellPos[i][1]-2*cellPos[minCell][1] ];
             // edgeDist = this.dot(toCenter, cellDiff)
             edgeDist = this.distFunc2(toCenter, cellDiff);
-            
-            cellPos.push(this.randomCoord(fitted[0], fitted[1]));
             minEdgeDistance = minEdgeDistance < edgeDist? minEdgeDistance : edgeDist
             // console.log(edgeDist, toCenter, cellDiff)
         }
@@ -1254,6 +1262,7 @@ class NoiseProgramManager{
                 * amplitude;    
             amplitude *= this.g; frequencyX *= this.lacunarity; frequencyY *= this.lacunarity;
         }
+        
         n = (divider != 1.)? n /= divider: n;
         // if (n > val[0]){ val[0] = n;} else if (n < val[1]){ val[1] = n;}
         return n;
@@ -1298,7 +1307,7 @@ class NoiseProgramManager{
                     this.enablePosMod((Math.round(x*this.resolution)+this.xOffset)*this.freq , this.REPEAT_[0]),
                     this.enablePosMod((Math.round(y*this.resolution)+this.yOffset)*this.freq , this.REPEAT_[1])
                 )
-                this.pixelArray[y][x] = this.processFunc(n, x, y);
+                this.pixelArray[y][x] = this.enableProcessLast(n, x, y);
             }}
             return; } // else        
         if (this.lighting){ // did i do it wrong
@@ -1313,7 +1322,7 @@ class NoiseProgramManager{
                 n3 = this.displayFunc(this.enablePosMod(fx, this.REPEAT_[0]), this.enablePosMod(fy+this.diffScaled, this.REPEAT_[1]), x, y, this.divider);
                 n4 = this.displayFunc(this.enablePosMod(fx, this.REPEAT_[0]), this.enablePosMod(fy-this.diffScaled, this.REPEAT_[1]), x, y, this.divider);
                 n = max(0, this.dot([n-n2, n3-n4, 0.001], this.lightingVec) + this.diffScaled)*100; // dot normal w/ [1, 1, 1]?
-                this.pixelArray[y][x] = this.processFunc(n, x, y); // idk how to normalize
+                this.pixelArray[y][x] = this.enableProcessLast(n, x, y); // idk how to normalize
             }}
             return;
         }
@@ -1326,7 +1335,7 @@ class NoiseProgramManager{
                     x, y, this.divider
                 );
                 // this.pixelArray[y][x] = this.closestPoint((x+this.xOffset)*this.f, (y+this.yOffset)*this.f);
-                this.pixelArray[y][x] = this.processFunc(n, x, y);
+                this.pixelArray[y][x] = this.enableProcessLast(n, x, y);
         // if (y > (1/this.f)){ break; } // 1/f = target pixels for 1 grid cell
         }}
     }
@@ -1698,6 +1707,8 @@ class NoiseProgramManager{
     toggleProcess(){ 
         if (this.processFBM){ this.enableProcess = this.processFunc.bind(this); }
         else { this.enableProcess = this.defaultWrapper.bind(this); }
+        if (this.processLastFBM){ this.enableProcessLast = this.processFunc.bind(this); }
+        else { this.enableProcessLast = this.defaultWrapper.bind(this); }
     }
 
     /* Change specific rotations */
