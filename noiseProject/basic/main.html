@@ -1,0 +1,35 @@
+<head> <title>Noise Playground</title> <style> 
+    canvas { position:absolute; top:0; left:0px; z-index:-1; }
+    div { height: auto; }
+    body {background-color: black;} * {color: grey; } * > div, input { display: inline-block; min-width: 0px; margin: 0px }
+</style> </head>
+<script>
+/* IMPORTS */
+ver = "1.11.8"// 1.11.8, 2.0.0, latest
+const ScriptSources = [ "https://cdn.jsdelivr.net/npm/p5@"+ver+"/lib/p5.min.js", "./allMyImports.js"];
+for (let i=0; i<ScriptSources.length; i++){
+    var script = document.createElement('script'); 
+    script.type = 'text/javascript'; script.src = ScriptSources[i]; 
+    document.head.appendChild(script);
+}
+/* DECLARE VARIABLES TO USE GLOBALLY */
+var canvasSize = [320, 240]; // performance tanks when you increase... so don't
+var gn;
+function setup() { /* INITIALIZE VARIABLES */
+    
+    var canvas = createCanvas(canvasSize[0], canvasSize[1]); 
+    canvas.parent('canvasContainer');
+    pixelDensity(1);
+    
+    gn = new NoiseProgramManager(canvasSize);
+    loadPixels();
+}
+function draw() {
+    gn.loadImage(); // P1: load
+    updatePixels();
+}
+</script>
+
+<body style="margin:0px;">
+    <div id="canvasContainer"></div>
+</body>
