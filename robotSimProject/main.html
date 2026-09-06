@@ -1,0 +1,126 @@
+<head> <title>Robot control</title> <style> canvas { position:absolute; top:0; left:0px; z-index:-1; }
+</style> </head>
+<script>
+/* IMPORTS */
+ver = "1.11.8"// 1.11.8, 2.0.0, latest
+const ScriptSources = [ "https://cdn.jsdelivr.net/npm/p5@"+ver+"/lib/p5.min.js", "./allMyImports.js"];
+for (let i=0; i<ScriptSources.length; i++){
+    var script = document.createElement('script'); 
+    script.type = 'text/javascript'; script.src = ScriptSources[i]; 
+    document.head.appendChild(script);
+}
+/* DECLARE VARIABLES TO USE GLOBALLY */
+var canvasSize = [320*2, 240*2]; // performance tanks when you increase... so don't
+var rb, ob, cc; //twas going to do a collisions checker, but let's not
+var someX = 0, someY = 20;
+
+function setup() { /* INITIALIZE VARIABLES */
+    var canvas = createCanvas(canvasSize[0], canvasSize[1]); 
+    canvas.parent('canvasContainer'); // windowWidth, windowHeight
+    window.canvasContainer.style.height = canvasSize[1];
+    window.canvasContainer.style.width = canvasSize[0];
+    // pixelDensity(1);
+
+    rb = new RobotControlManager(canvasSize);
+    ob = new ObsctaclesManager(canvasSize);
+    rb.assign(ob);
+    ob.assign(rb);
+    rb.outputElement(document.querySelector("#InputTextArea"))
+    rb.assign_goal(NaN, 400);
+    ob.generateMaze();
+    
+    loadPixels();
+
+}
+
+// function mousePressed() { gn.handlePress(); }
+function keyPressed(event) { // don't use "key"
+    // print('pres', event.key);
+    rb.keys(event.key);
+    ob.keys(event.key, false, mouseX, mouseY);
+}
+function keyReleased(event) {
+    // print('rel', event.key);
+    rb.keys(event.key, true);
+    ob.keys(event.key, true, mouseX, mouseY);
+}
+
+
+
+
+async function loadMe(){
+    while (true){
+        await new Promise(r => setTimeout(r, 500));
+        if (rb != undefined){
+            var domElementHack = document.createElement('div');
+            document.querySelector('body').appendChild(domElementHack);
+            await rb.assignEventHandler(domElementHack); // run once after page loads :I
+            break;
+        } else { console.log('waiting to find rb...'); }
+    }
+}
+
+
+function draw() {
+    background(175);
+    // Note: redirecting due to collisions is not implemented (yet)
+    // Intended for navigation 
+
+
+    rb.follow();    // so screen follows the robot... idk
+    ob.spawn(x=0, y=0);     // draw blue square
+
+    rb.handleControls(); // you don't want to know...
+    ob.draw();      // draw obstacles
+
+    // scans are expensive damnit    
+    if (rb.elapsedTime('/#1', rb.TIMER_RAY)){ // FAAAAASTER FPS
+        rb.scan(); // "raycast" pls dont set rb.scan_angle < 2 it's too laggy
+        rb.startTimes["/#1"] = Date.now();
+    } else {
+        // image(rb.myLayer, -width/2, -height/2)
+        rb.scanDraw();
+    }
+    if (rb.elapsedTime('/#2', rb.TIMER)){ // every 0.5 s, calls proposed_loc
+        rb.goalAlgo();  // implement your version here
+        rb.startTimes["/#2"] = Date.now();
+        
+    } 
+    rb.draw();      // draw robot
+
+    // rb.propose_loc(); // update location, kinda useless rn w/out collisions
+    rb.checkGoal();   // if above y = whatnot
+    rb.outputText();  // to textarea below
+
+}
+</script>
+
+<style id="style">
+    div { height: auto; }
+    body {background-color: black;} * {color: grey; } * > div, input { display: inline-block; min-width: 0px; margin: 0px } 
+    /* * { border: 1px solid red; }  */
+    .slider { --SliderColor: rgb(191, 191, 191); -webkit-appearance: none;
+    height: 8px; border-radius: 1px; margin-bottom: 6px; background-color: rgb(91, 91, 91); }
+    .slider::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 6px;
+    border-radius:50%; background-color: var(--SliderColor); border: solid black; overflow: visible; cursor: pointer;
+    }
+    .divContainer {font-size: 0px; }
+    .divContainer * {font-size: 12.5px; }
+    .divContainer > * { vertical-align: top;}
+    input[type="radio"] { filter: hue-rotate(30deg); }
+    textarea { font-size: 25px; }  
+</style>
+
+<script> var dateObj = new Date(); if ((dateObj).toString().search("Apr 01") > 0) {
+document.querySelector("#style").innerHTML = document.querySelector("#style").innerHTML + " * {font-family: Comic Sans MS !important; font-size: 12px;}";}
+</script>
+
+
+<body style="margin:2px; width: 820px; " onload="loadMe()">
+    <div style="position:relative;outline: 1px solid white;"> 
+    <div id="canvasContainer" style="height:100%"></div>
+    </div><br>
+<br><textarea id="InputTextArea" spellcheck="false" style="background: #000000AA; width: 820px; height:50% ">
+Dead-o for my exam-o
+</textarea>
+</body>
