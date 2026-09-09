@@ -28,6 +28,7 @@ function setup() { /* INITIALIZE VARIABLES */
     rb.outputElement(document.querySelector("#InputTextArea"))
     rb.assign_goal(NaN, 400);
     ob.generateMaze();
+    // ob.test();
     
     loadPixels();
 
@@ -46,8 +47,6 @@ function keyReleased(event) {
 }
 
 
-
-
 async function loadMe(){
     while (true){
         await new Promise(r => setTimeout(r, 500));
@@ -58,6 +57,10 @@ async function loadMe(){
             break;
         } else { console.log('waiting to find rb...'); }
     }
+
+    // # 'send' calls isn't correct, nvm it was reset goofing everything up 
+    await new Promise(r => setTimeout(r, 10));
+    rb.loading = false
 }
 
 
@@ -69,6 +72,7 @@ function draw() {
 
     rb.follow();    // so screen follows the robot... idk
     ob.spawn(x=0, y=0);     // draw blue square
+    rb.drawGoal();
 
     rb.handleControls(); // you don't want to know...
     ob.draw();      // draw obstacles
@@ -80,12 +84,21 @@ function draw() {
     } else {
         // image(rb.myLayer, -width/2, -height/2)
         rb.scanDraw();
+        
     }
     if (rb.elapsedTime('/#2', rb.TIMER)){ // every 0.5 s, calls proposed_loc
         rb.goalAlgo();  // implement your version here
         rb.startTimes["/#2"] = Date.now();
-        
-    } 
+    } else { 
+        rb.scanDraw('algo');
+
+        // console.log(rb.scanDrawBuffer['algo'] != undefined ? rb.scanDrawBuffer['algo'].length : 0)
+     }
+   
+
+    // Check distance
+    // if ((rb.rays != undefined) &&(rb.rays.length > 1)) console.log(rb.rays[1]) # (index CCW from top)
+
     rb.draw();      // draw robot
 
     // rb.propose_loc(); // update location, kinda useless rn w/out collisions
@@ -121,6 +134,6 @@ document.querySelector("#style").innerHTML = document.querySelector("#style").in
     <div id="canvasContainer" style="height:100%"></div>
     </div><br>
 <br><textarea id="InputTextArea" spellcheck="false" style="background: #000000AA; width: 820px; height:50% ">
-Dead-o for my exam-o
+Mouse over
 </textarea>
 </body>
