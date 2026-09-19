@@ -1,0 +1,92 @@
+<head> <title>CharacterFinder</title> <style> canvas { position:absolute; top:0; left:0px; z-index:-1; }
+</style> </head>
+<script>
+/* IMPORTS */
+ver = "1.11.8"// 1.11.8, 2.0.0, latest
+const ScriptSources = [ 
+    // "https://cdn.jsdelivr.net/npm/p5@"+ver+"/lib/p5.min.js",
+     "./allMyImports.js"];
+for (let i=0; i<ScriptSources.length; i++){
+    var script = document.createElement('script'); 
+    script.type = 'text/javascript'; script.src = ScriptSources[i]; 
+    document.head.appendChild(script);
+}
+/* DECLARE VARIABLES TO USE GLOBALLY */
+// var canvasSize = [320*2, 240*2]; // performance tanks when you increase... so don't
+var gn, myGUI;
+function MYsetup(parent) { /* INITIALIZE VARIABLES */
+    // var canvas = createCanvas(canvasSize[0], canvasSize[1]); canvas.parent('canvasContainer'); // windowWidth, windowHeight
+    // window.canvasContainer.style.height = canvasSize[1];
+    // pixelDensity(1);
+    
+    parent = parent.document.querySelector('[id="unload here"]');
+    myGUI = new CharacterFinderUI(parent);
+    gn = new CharacterFinder();
+    myGUI.attach(gn);
+    gn.attach(myGUI);
+        
+//     parent.innerHTML=
+// String.raw`
+//         <input type="text" class=${"bruhhh"}></input>
+//         `;
+
+    // loadPixels();
+}
+// function mousePressed() { gn.handlePress(); }
+// function draw() {
+//     updatePixels();
+// }
+</script>
+
+<style id="style">
+    div { height: auto; }
+    body, input {background-color: black;} * {color: grey; } * > div, input { display: inline-block; min-width: 0px; margin: 0px } 
+    /* * { border: 1px solid red; }  */
+    .slider { --SliderColor: rgb(191, 191, 191); -webkit-appearance: none;
+    height: 8px; border-radius: 1px; margin-bottom: 6px; background-color: rgb(91, 91, 91); }
+    .slider::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 6px;
+    border-radius:50%; background-color: var(--SliderColor); border: solid black; overflow: visible; cursor: pointer;
+    }
+    .divContainer {font-size: 0px; }
+    .divContainer * {font-size: 12.5px; }
+    .divContainer > * { vertical-align: top;}
+     input[type="radio"] { filter: hue-rotate(30deg); }  
+     
+    input { font-size: 20px }
+    table { font-size: 30px }
+    /* td {border: 1px solid red} */
+</style>
+
+<body style="margin:0px; width: 820px; " onload="MYsetup(this)">
+    <!-- <div style="position:relative;outline: 1px solid white; height: 241px">
+    <div id="canvasContainer" style="height:100%"></div>
+    </div><br> -->
+
+    <h1>Click a row to copy and paste!</h2>
+    <div id="unload here"></div>
+
+    <pre>
+
+Intended Convention: 
+- use ONLY tab to separate each term.   (please replace all instances of "\t" w/ another delimeter if you want to use tabs as characters)
+    Ex: [character(s) terms]\t\t[possible name(s)]\t\t[tag(s)]
+- Character: a symbol to copy and paste. customized strings with multiple characters are allowed
+    Ex: e^(i𝜋)	e^i𝜋	e^i𝜋 + 1 = 0      euler's identity   i haven't actually seen this       math
+- Name: a search term
+    Ex: searching "qu" may show characters named with "equal" and "quantifier" but not "q"
+    STRICT. Cannot handle spaces, currently does not allow searching multiple names. 
+    Note that there's a line that trims spaces before & after names.
+- Tags: filter intended to group characters together
+    Ex: "discrete mathematics" symbols include ∧ ∨ ∅ ∀ etc...
+
+- named starting with "~" so unimportant characters are at the bottom
+- repeated characters (multiple lines) are allowed, but may create duplicate lines
+    this is useful for tagging multiple alphabets together (to avoid copy pasting tags 26 x "how many alphabets are there?" times)
+    or vice versa (ex: naming all "A" characters)
+    
+No thought was put into optimizing.
+Please modify data at your own requirements :)
+    </pre>
+    <!-- <br><textarea id="InputTextArea" spellcheck="false" style="background: #000000AA; width: 820px; height:50% "> -->
+</textarea>
+</body>
